@@ -3,42 +3,34 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>WAIS</title>
+<title>Telecom Site &amp; Cell Database</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh}
 
-/* ── Setup ── */
-#setup-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
-.setup-card{background:#fff;border-radius:16px;padding:2.5rem;max-width:580px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.08)}
-.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
-.logo-icon{width:40px;height:40px;background:#185FA5;border-radius:10px;display:flex;align-items:center;justify-content:center}
-.logo-text{font-size:18px;font-weight:700;color:#185FA5}
-.setup-card h2{font-size:22px;font-weight:700;margin-bottom:.4rem}
-.setup-card>p{font-size:13px;color:#666;line-height:1.6;margin-bottom:1.5rem}
-.steps{margin-bottom:1.5rem}
-.step{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
-.step-n{width:24px;height:24px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-t{font-size:13px;color:#444;line-height:1.6}
-.step-t a{color:#185FA5}
-details{border:1px solid #e0e0e0;border-radius:8px;padding:10px 14px;margin-bottom:1.25rem}
-details summary{font-size:13px;font-weight:600;color:#185FA5;cursor:pointer}
-#script-box{width:100%;height:180px;font-size:11px;font-family:monospace;border:1px solid #d0d0d0;border-radius:6px;padding:8px;resize:vertical;color:#333;line-height:1.5;margin-top:8px}
-.copy-btn{margin-top:6px;font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #d0d0d0;cursor:pointer;background:#f5f5f5}
-.mode-row{display:flex;gap:8px;margin-bottom:1rem}
-.mode-btn{flex:1;padding:10px;border-radius:8px;border:1.5px solid #d0d0d0;background:#f9f9f9;font-size:13px;font-weight:500;cursor:pointer;color:#555;transition:all .15s}
-.mode-btn.active{border-color:#185FA5;background:#E6F1FB;color:#185FA5}
-.field-group{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem}
-.field-group label{font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.04em}
-.field-group input{height:42px;border:1.5px solid #d0d0d0;border-radius:8px;padding:0 14px;font-size:14px;outline:none;transition:border-color .15s;width:100%}
-.field-group input:focus{border-color:#185FA5}
-.field-group small{font-size:12px;color:#999}
-.setup-err{background:#FAECE7;color:#993C1D;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem;display:none;line-height:1.5}
-.connect-btn{width:100%;height:44px;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer}
-.connect-btn:hover{background:#0C447C}
-.connect-btn:disabled{opacity:.7;cursor:default}
+/* ── Login Screen ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;background:#f7f8fa}
+.login-card{background:#fff;border-radius:16px;padding:2.8rem 2.5rem;max-width:380px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,.07),0 0 0 1px rgba(0,0,0,.05)}
+.login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:2rem}
+.login-logo-icon{width:44px;height:44px;background:#1a1a2e;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.login-logo-text{font-size:16px;font-weight:700;color:#1a1a2e;line-height:1.2}
+.login-logo-sub{font-size:11px;color:#aaa;font-weight:400}
+.login-title{font-size:21px;font-weight:700;color:#1a1a2e;margin-bottom:.3rem;text-align:center}
+.login-sub{font-size:13px;color:#aaa;text-align:center;margin-bottom:1.8rem}
+.login-fg{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem}
+.login-fg label{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.05em}
+.login-input-wrap{position:relative}
+.login-fg input{height:44px;border:1.5px solid #e8e8e8;border-radius:9px;padding:0 42px 0 14px;font-size:14px;outline:none;transition:border-color .15s;width:100%;color:#1a1a2e;background:#fafafa}
+.login-fg input:focus{border-color:#1a1a2e;background:#fff}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#ccc;padding:2px;display:flex;align-items:center}
+.eye-btn:hover{color:#888}
+.login-err{background:#FEECEC;color:#C62828;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem;display:none;line-height:1.5}
+.login-btn{width:100%;height:46px;background:#1a1a2e;color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;letter-spacing:.01em;transition:background .15s}
+.login-btn:hover{background:#2d2d44}
+.login-btn:disabled{opacity:.5;cursor:default}
+.login-footer{text-align:center;font-size:11px;color:#ccc;margin-top:1.5rem}
 
 /* ── App ── */
 #app{display:none;max-width:1300px;margin:0 auto;padding:1.5rem}
@@ -165,6 +157,10 @@ tbody td{padding:10px 14px;vertical-align:middle}
 #toast.show{opacity:1}
 #toast.terr{background:#A32D2D}
 
+.skel-row td{padding:12px 14px}
+.skel{height:13px;border-radius:4px;background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 @media(max-width:600px){
   .fg-grid,.det-grid{grid-template-columns:1fr}
   .fg.full,.det-f.full{grid-column:1}
@@ -173,39 +169,34 @@ tbody td{padding:10px 14px;vertical-align:middle}
 </head>
 <body>
 
-<!-- ═══ SETUP ═══════════════════════════════════════════════════════════════ -->
-<div id="setup-screen">
-  <div class="setup-card">
-    <div class="logo-row">
-      <div class="logo-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l11 6 11-6"/><path d="M1 12l11 6 11-6"/></svg>
+<!-- ═══ LOGIN ══════════════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l11 6 11-6"/><path d="M1 12l11 6 11-6"/></svg>
       </div>
-      <span class="logo-text">Telecom Site DB</span>
+      <div>
+        <div class="login-logo-text">Telecom Site DB</div>
+        <div class="login-logo-sub">Cell &amp; Site Database</div>
+      </div>
     </div>
-    <h2>Connect to Google Sheets</h2>
-    <p>Your data lives in a Google Sheet you own — free and permanent. Follow the steps below once to get started.</p>
-    <div class="steps">
-      <div class="step"><div class="step-n">1</div><div class="step-t">Go to <a href="https://sheets.new" target="_blank">sheets.new</a> to create a new Google Sheet.</div></div>
-      <div class="step"><div class="step-n">2</div><div class="step-t">Click <strong>Extensions → Apps Script</strong>, delete any existing code, paste the script below, then press <strong>Ctrl+S</strong> to save.</div></div>
-      <div class="step"><div class="step-n">3</div><div class="step-t">Click <strong>Deploy → New Deployment</strong>. Set Type: <strong>Web App</strong>, Execute as: <strong>Me</strong>, Who has access: <strong>Anyone</strong>. Click Deploy and authorize when prompted.</div></div>
-      <div class="step"><div class="step-n">4</div><div class="step-t">Copy the <strong>Web App URL</strong> shown after deploying and paste it below.</div></div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to continue</div>
+
+    <div class="login-fg">
+      <label>Password</label>
+      <div class="login-input-wrap">
+        <input type="password" id="login-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button class="eye-btn" onclick="togglePw()" tabindex="-1">
+          <svg id="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
     </div>
-    <details>
-      <summary>&#128203; Show Apps Script code to paste</summary>
-      <textarea id="script-box" readonly></textarea>
-      <button class="copy-btn" onclick="copyScript()">Copy to clipboard</button>
-    </details>
-    <div class="mode-row">
-      <button class="mode-btn active" id="mode-admin" onclick="setMode('admin')">&#128295; Admin (add / edit / delete)</button>
-      <button class="mode-btn" id="mode-view" onclick="setMode('view')">&#128065; View only</button>
-    </div>
-    <div class="field-group">
-      <label>Apps Script Web App URL</label>
-      <input type="url" id="setup-url" placeholder="https://script.google.com/macros/s/.../exec"/>
-      <small>Paste the Web App URL from your Apps Script deployment.</small>
-    </div>
-    <div class="setup-err" id="setup-err"></div>
-    <button class="connect-btn" id="connect-btn" onclick="connectSheet()">Connect &amp; Open Database</button>
+
+    <div class="login-err" id="login-err">Incorrect password. Please try again.</div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-footer">Telecom Site &amp; Cell Database &copy; 2025</div>
   </div>
 </div>
 
@@ -217,14 +208,14 @@ tbody td{padding:10px 14px;vertical-align:middle}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l11 6 11-6"/><path d="M1 12l11 6 11-6"/></svg>
       </div>
       <div>
-        <div class="app-title">Wireless Access Information Storage</div>
-        <div class="app-sub">Wireless Access Planning & Engineering</div>
+        <div class="app-title">Telecom Site &amp; Cell Database</div>
+        <div class="app-sub" id="welcome-msg">Welcome!</div>
       </div>
     </div>
     <div class="hdr-right">
       <div class="sync"><div class="dot" id="sync-dot"></div><span id="sync-lbl">Synced</span></div>
       <button class="btn-sec" onclick="loadSites()">&#8635; Refresh</button>
-      <button class="btn-sec" onclick="disconnect()">Disconnect</button>
+      <button class="btn-sec" onclick="doLogout()">Logout</button>
     </div>
   </div>
 
@@ -233,7 +224,6 @@ tbody td{padding:10px 14px;vertical-align:middle}
   <div class="stats">
     <div class="stat"><div class="stat-lbl">Total Sites</div><div class="stat-val" id="st-total">—</div></div>
     <div class="stat"><div class="stat-lbl">2G Sites</div><div class="stat-val v-2g" id="st-2g">—</div></div>
-    <div class="stat"><div class="stat-lbl">3G Sites</div><div class="stat-val v-3g" id="st-3g">—</div></div>
     <div class="stat"><div class="stat-lbl">4G Sites</div><div class="stat-val v-4g" id="st-4g">—</div></div>
     <div class="stat"><div class="stat-lbl">5G Sites</div><div class="stat-val v-5g" id="st-5g">—</div></div>
   </div>
@@ -241,12 +231,11 @@ tbody td{padding:10px 14px;vertical-align:middle}
   <div class="toolbar">
     <div class="search-box">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#aaa" stroke-width="1.3"/><path d="M11 11l3 3" stroke="#aaa" stroke-width="1.3" stroke-linecap="round"/></svg>
-      <input id="search-input" placeholder="Search by Site ID, Site Name, City, Province, Region..."/>
+      <input id="search-input" placeholder="Search by Site ID, name, city, address, region..."/>
     </div>
     <div class="filters" id="tech-filters">
       <button class="fb on" data-v="all">All Tech</button>
       <button class="fb" data-v="2G">2G</button>
-      <button class="fb" data-v="3G">3G</button>
       <button class="fb" data-v="4G">4G</button>
       <button class="fb" data-v="5G">5G</button>
     </div>
@@ -315,7 +304,6 @@ tbody td{padding:10px 14px;vertical-align:middle}
     <div class="sec-title">Technology On-Air</div>
     <div class="ck-group" id="tech-checks">
       <label class="ck"><input type="checkbox" value="2G" onchange="toggleCk(this)"/> 2G</label>
-      <label class="ck"><input type="checkbox" value="3G" onchange="toggleCk(this)"/> 3G</label>
       <label class="ck"><input type="checkbox" value="4G" onchange="toggleCk(this)"/> 4G</label>
       <label class="ck"><input type="checkbox" value="5G" onchange="toggleCk(this)"/> 5G</label>
     </div>
@@ -323,8 +311,6 @@ tbody td{padding:10px 14px;vertical-align:middle}
     <div class="ck-group" id="band-checks">
       <label class="ck"><input type="checkbox" value="G900"   onchange="toggleCk(this)"/> G900</label>
       <label class="ck"><input type="checkbox" value="G1800"  onchange="toggleCk(this)"/> G1800</label>
-      <label class="ck"><input type="checkbox" value="U900"   onchange="toggleCk(this)"/> U900</label>
-      <label class="ck"><input type="checkbox" value="U2100"  onchange="toggleCk(this)"/> U2100</label>
       <label class="ck"><input type="checkbox" value="L700"   onchange="toggleCk(this)"/> L700</label>
       <label class="ck"><input type="checkbox" value="L850"   onchange="toggleCk(this)"/> L850</label>
       <label class="ck"><input type="checkbox" value="L1800"  onchange="toggleCk(this)"/> L1800</label>
@@ -388,14 +374,12 @@ tbody td{padding:10px 14px;vertical-align:middle}
 var GAS_CODE = [
   "const COLS = ['site_id','site_name','site_status','site_type','address','site_tag','brgy',",
   "  'city','province','region','area','latitude','longitude',",
-  "  'tech_2g','tech_3g','tech_4g','tech_5g',",
-  "  'band_g900','band_g1800','band_u900','band_u2100',",
+  "  'tech_2g','tech_4g','tech_5g',",
+  "  'band_g900','band_g1800',",
   "  'band_l700','band_l850','band_l1800','band_l2100','band_l2300','band_l2600',",
   "  'band_nr700','band_nr2100','band_nr2600','band_nr3500',",
   "  'cell_g900_config','cell_g900_bts_name','cell_g900_cell_name','cell_g900_bsc','cell_g900_bcch','cell_g900_tch','cell_g900_lac','cell_g900_m_tilt','cell_g900_ret','cell_g900_azimuth','cell_g900_height','cell_g900_notes',",
   "  'cell_g1800_config','cell_g1800_bts_name','cell_g1800_cell_name','cell_g1800_bsc','cell_g1800_bcch','cell_g1800_tch','cell_g1800_lac','cell_g1800_m_tilt','cell_g1800_ret','cell_g1800_azimuth','cell_g1800_height','cell_g1800_notes',",
-  "  'cell_u900_config','cell_u900_nodeb_name','cell_u900_cell_name','cell_u900_rnc','cell_u900_uarfcn','cell_u900_lac','cell_u900_psc','cell_u900_m_tilt','cell_u900_ret','cell_u900_azimuth','cell_u900_height','cell_u900_notes',",
-  "  'cell_u2100_config','cell_u2100_nodeb_name','cell_u2100_cell_name','cell_u2100_rnc','cell_u2100_uarfcn','cell_u2100_lac','cell_u2100_psc','cell_u2100_m_tilt','cell_u2100_ret','cell_u2100_azimuth','cell_u2100_height','cell_u2100_notes',",
   "  'cell_l700_config','cell_l700_enodeb_name','cell_l700_cell_name','cell_l700_earfcn','cell_l700_pci','cell_l700_ci','cell_l700_tac','cell_l700_bandwidth','cell_l700_m_tilt','cell_l700_ret','cell_l700_azimuth','cell_l700_height','cell_l700_notes',",
   "  'cell_l850_config','cell_l850_enodeb_name','cell_l850_cell_name','cell_l850_earfcn','cell_l850_pci','cell_l850_ci','cell_l850_tac','cell_l850_bandwidth','cell_l850_m_tilt','cell_l850_ret','cell_l850_azimuth','cell_l850_height','cell_l850_notes',",
   "  'cell_l1800_config','cell_l1800_enodeb_name','cell_l1800_cell_name','cell_l1800_earfcn','cell_l1800_pci','cell_l1800_ci','cell_l1800_tac','cell_l1800_bandwidth','cell_l1800_m_tilt','cell_l1800_ret','cell_l1800_azimuth','cell_l1800_height','cell_l1800_notes',",
@@ -407,18 +391,19 @@ var GAS_CODE = [
   "  'cell_nr2600_config','cell_nr2600_gnodeb_name','cell_nr2600_cell_name','cell_nr2600_arfcn','cell_nr2600_pci','cell_nr2600_ci','cell_nr2600_tac','cell_nr2600_bandwidth','cell_nr2600_m_tilt','cell_nr2600_ret','cell_nr2600_azimuth','cell_nr2600_height','cell_nr2600_notes',",
   "  'cell_nr3500_config','cell_nr3500_gnodeb_name','cell_nr3500_cell_name','cell_nr3500_arfcn','cell_nr3500_pci','cell_nr3500_ci','cell_nr3500_tac','cell_nr3500_bandwidth','cell_nr3500_m_tilt','cell_nr3500_ret','cell_nr3500_azimuth','cell_nr3500_height','cell_nr3500_notes'];",
   "",
-  "function doGet(e)  { return out(run(e.parameter || {})); }",
-  "function doPost(e) { return out(run(e.parameter || {})); }",
+  "function doGet(e)  { return out(run((e && e.parameter) || {})); }",
+  "function doPost(e) { return out(run((e && e.postData && JSON.parse(e.postData.contents)) || (e && e.parameter) || {})); }",
   "function out(d) {",
   "  return ContentService.createTextOutput(JSON.stringify(d))",
   "    .setMimeType(ContentService.MimeType.JSON);",
   "}",
   "function run(p) {",
   "  try {",
-  "    if (p.action === 'get')    return getAll();",
-  "    if (p.action === 'save')   return save(p);",
-  "    if (p.action === 'delete') return del(p);",
-  "    return { error: 'Unknown action' };",
+  "    if (p.action === 'get')      return getAll();",
+  "    if (p.action === 'getCells') return getCells(p);",
+  "    if (p.action === 'save')     return save(p);",
+  "    if (p.action === 'delete')   return del(p);",
+  "    return { error: 'Unknown action: ' + (p.action || 'none') };",
   "  } catch(e) { return { error: e.message }; }",
   "}",
   "function getSheet() {",
@@ -429,29 +414,71 @@ var GAS_CODE = [
   "    sh.appendRow(COLS);",
   "    sh.setFrozenRows(1);",
   "    sh.getRange(1,1,1,COLS.length).setFontWeight('bold');",
+  "  } else {",
+  "    syncColumns(sh);",
   "  }",
   "  return sh;",
   "}",
+  "function syncColumns(sh) {",
+  "  var headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(function(h){ return String(h).trim(); });",
+  "  var missing = COLS.filter(function(c){ return headers.indexOf(c) === -1; });",
+  "  if (missing.length === 0) return;",
+  "  var startCol = sh.getLastColumn() + 1;",
+  "  sh.getRange(1, startCol, 1, missing.length).setValues([missing]);",
+  "  sh.getRange(1, startCol, 1, missing.length).setFontWeight('bold');",
+  "}",
+  "function runSetup() {",
+  "  getSheet();",
+  "  SpreadsheetApp.getUi().alert('Setup complete! All columns are now synced.');",
+  "}",
   "function getAll() {",
   "  var sh = getSheet();",
-  "  var data = sh.getDataRange().getValues();",
-  "  if (data.length <= 1) return { rows: [], total: 0 };",
-  "  var headers = data[0].map(function(h){ return String(h); });",
-  "  var rows = data.slice(1).map(function(r, i) {",
+  "  var lastRow = sh.getLastRow();",
+  "  var lastCol = sh.getLastColumn();",
+  "  if (lastRow <= 1) return { rows: [], total: 0 };",
+  "  var headers = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h){ return String(h).trim(); });",
+  "  // Only return core columns — skip cell_* to keep payload small",
+  "  var coreIdx = [];",
+  "  headers.forEach(function(h, i){ if (h.indexOf('cell_') !== 0) coreIdx.push(i); });",
+  "  var coreHeaders = coreIdx.map(function(i){ return headers[i]; });",
+  "  var total = lastRow - 1;",
+  "  var data = sh.getRange(2, 1, total, lastCol).getValues();",
+  "  var rows = data.map(function(r, i) {",
   "    var o = { _row: i + 2 };",
-  "    headers.forEach(function(k, j) { o[k] = r[j] === '' ? '' : String(r[j]); });",
+  "    coreIdx.forEach(function(ci, j){ o[coreHeaders[j]] = r[ci] === '' ? '' : String(r[ci]); });",
   "    return o;",
   "  });",
-  "  return { rows: rows, total: rows.length };",
+  "  return { rows: rows, total: total };",
+  "}",
+  "function getCells(p) {",
+  "  var rn = parseInt(p._row || '0');",
+  "  if (rn < 2) return { error: 'Invalid row' };",
+  "  var sh = getSheet();",
+  "  var lastCol = sh.getLastColumn();",
+  "  var headers = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h){ return String(h).trim(); });",
+  "  var rowData = sh.getRange(rn, 1, 1, lastCol).getValues()[0];",
+  "  var result = {};",
+  "  headers.forEach(function(h, i){",
+  "    if (h.indexOf('cell_') === 0) result[h] = rowData[i] === '' ? '' : String(rowData[i]);",
+  "  });",
+  "  return { cells: result };",
   "}",
   "function save(p) {",
   "  var sh = getSheet();",
-  "  var row = COLS.map(function(c) { return p[c] !== undefined ? p[c] : ''; });",
+  "  var lastCol = sh.getLastColumn();",
+  "  var headers = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(function(h){ return String(h).trim(); });",
   "  var rn = parseInt(p._row || '0');",
   "  if (rn >= 2) {",
-  "    sh.getRange(rn, 1, 1, COLS.length).setValues([row]);",
+  "    // Update only columns whose header matches a key in p — never touch unrecognised columns",
+  "    headers.forEach(function(h, i) {",
+  "      if (h && p[h] !== undefined) {",
+  "        sh.getRange(rn, i + 1).setValue(p[h]);",
+  "      }",
+  "    });",
   "    return { ok: true };",
   "  }",
+  "  // New row — build array in sheet header order",
+  "  var row = headers.map(function(h){ return p[h] !== undefined ? p[h] : ''; });",
   "  sh.appendRow(row);",
   "  return { ok: true, row: sh.getLastRow() };",
   "}",
@@ -464,23 +491,25 @@ var GAS_CODE = [
 ].join("\n");
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-var TECHS = ['2G','3G','4G','5G'];
-var BANDS = ['G900','G1800','U900','U2100','L700','L850','L1800','L2100','L2300','L2600','NR700','NR2100','NR2600','NR3500'];
+var TECHS = ['2G','4G','5G'];
+var BANDS = ['G900','G1800','L700','L850','L1800','L2100','L2300','L2600','NR700','NR2100','NR2600','NR3500'];
 
 // ─── State ───────────────────────────────────────────────────────────────────
-var GS_URL = '', IS_ADMIN = false;
+var IS_ADMIN = false;
 var ALL = [], filtered = [];
 var curPage = 1, PER = 25;
 var sortCol = 'site_id', sortDir = 1;
 var techF = 'all', statusF = 'all', searchQ = '';
 var editRow = null, detailIdx = -1;
+var cellCache = {}; // keyed by _row, stores fetched cell data
 var selMode = 'admin';
 
 // ─── DOM ready — everything starts here ─────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
 
-  // Populate script textarea
-  document.getElementById('script-box').value = GAS_CODE;
+  // Populate script textarea (if present)
+  var scriptBox = document.getElementById('script-box');
+  if (scriptBox) scriptBox.value = GAS_CODE;
 
   // Wire up search
   document.getElementById('search-input').addEventListener('input', function(e) {
@@ -505,86 +534,86 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Auto-reconnect from saved config
+  // Restore session if still active (tab not closed)
   try {
-    var cfg = JSON.parse(localStorage.getItem('tsdb_v2') || 'null');
-    if (cfg && cfg.url) {
-      GS_URL = cfg.url;
-      IS_ADMIN = !!cfg.admin;
-      showApp();
+    var sess = JSON.parse(sessionStorage.getItem('tsdb_session') || 'null');
+    if (sess) {
+      IS_ADMIN = !!sess.admin;
+      showApp(sess.user || 'User');
     }
   } catch(e) {}
 });
 
-// ─── Setup ───────────────────────────────────────────────────────────────────
-function setMode(m) {
-  selMode = m;
-  document.getElementById('mode-admin').classList.toggle('active', m === 'admin');
-  document.getElementById('mode-view').classList.toggle('active', m === 'view');
+// ─── Config (hardcoded) ───────────────────────────────────────────────────────
+var GS_URL = 'https://script.google.com/macros/s/AKfycbzdNEzS3t6mnw7wWBxm3UFmHUtz39PWvmpS2BnSnRyvsOuhk6LS1H-V-58nsx25BwEenw/exec';
+
+// SHA-256 hash of password — change to update your password
+// Current password: Acc3$$2026
+var PW_HASHES = {
+  admin: '4d278ca57bacebf8ebe72c176fedf12cccdbf1c70fd7e26019ae0fca59ea7cd4'
+};
+
+async function sha256(msg) {
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
 }
 
-function copyScript() {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(GAS_CODE).then(function(){ showToast('Copied!'); });
-  } else {
-    var ta = document.getElementById('script-box');
-    ta.select(); document.execCommand('copy'); showToast('Copied!');
-  }
+// ─── Login ────────────────────────────────────────────────────────────────────
+
+function togglePw() {
+  var inp = document.getElementById('login-pw');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
-async function connectSheet() {
-  var url = document.getElementById('setup-url').value.trim();
-  var errEl = document.getElementById('setup-err');
+async function doLogin() {
+  var pw = document.getElementById('login-pw').value;
+  var errEl = document.getElementById('login-err');
+  var btn = document.getElementById('login-btn');
+  if (!pw) { errEl.style.display = 'block'; return; }
+
+  btn.textContent = 'Signing in...'; btn.disabled = true;
   errEl.style.display = 'none';
 
-  if (!url) {
-    errEl.textContent = 'Please paste your Apps Script Web App URL above.';
-    errEl.style.display = 'block'; return;
-  }
-  if (url.indexOf('script.google.com') === -1) {
-    errEl.textContent = 'That does not look like an Apps Script URL. It should start with https://script.google.com/...';
-    errEl.style.display = 'block'; return;
-  }
+  var hash = await sha256(pw);
+  var expected = PW_HASHES['admin'];
 
-  var btn = document.getElementById('connect-btn');
-  btn.textContent = 'Connecting...'; btn.disabled = true;
-
-  try {
-    var res = await gsGet(url, { action: 'get' });
-    if (res.error) throw new Error(res.error);
-
-    GS_URL = url;
-    IS_ADMIN = (selMode === 'admin');
-    localStorage.setItem('tsdb_v2', JSON.stringify({ url: GS_URL, admin: IS_ADMIN }));
-    ALL = res.rows || [];
-    showApp();
-  } catch(e) {
-    errEl.innerHTML =
-      '<strong>Connection failed:</strong> ' + escHtml(e.message) + '<br>' +
-      '<small>Check that:<br>' +
-      '1. The Web App access is set to <strong>Anyone</strong><br>' +
-      '2. You clicked <strong>Authorize</strong> when deploying<br>' +
-      '3. The URL ends with <strong>/exec</strong> (not /dev)</small>';
+  if (hash !== expected) {
     errEl.style.display = 'block';
-  } finally {
-    btn.textContent = 'Connect & Open Database'; btn.disabled = false;
+    btn.textContent = 'Sign In'; btn.disabled = false;
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-pw').focus();
+    return;
   }
+
+  IS_ADMIN = true;
+  // Derive username from device hostname/domain
+  var host = window.location.hostname || '';
+  var domainName = host ? host.split('.')[0] : 'User';
+  domainName = domainName.charAt(0).toUpperCase() + domainName.slice(1);
+  sessionStorage.setItem('tsdb_session', JSON.stringify({ admin: IS_ADMIN, user: domainName }));
+  showApp(domainName);
+  btn.textContent = 'Sign In'; btn.disabled = false;
 }
 
-function showApp() {
-  document.getElementById('setup-screen').style.display = 'none';
+function doLogout() {
+  if (!confirm('Log out?')) return;
+  sessionStorage.removeItem('tsdb_session');
+  IS_ADMIN = false; ALL = []; cellCache = {};
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-err').style.display = 'none';
+}
+
+function showApp(userName) {
+  userName = userName || 'User';
+  document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('add-btn').style.display = IS_ADMIN ? '' : 'none';
   document.getElementById('readonly-bar').style.display = IS_ADMIN ? 'none' : 'block';
+  var welcomeEl = document.getElementById('welcome-msg');
+  if (welcomeEl) welcomeEl.textContent = 'Welcome, ' + userName + '!';
   loadSites();
-}
-
-function disconnect() {
-  if (!confirm('Disconnect from Google Sheets?')) return;
-  localStorage.removeItem('tsdb_v2');
-  GS_URL = ''; IS_ADMIN = false; ALL = [];
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('setup-screen').style.display = 'flex';
 }
 
 // ─── Google Sheets GET request ────────────────────────────────────────────────
@@ -600,9 +629,18 @@ function gsGet(url, params) {
 
 async function loadSites() {
   syncDot('spin');
-  document.getElementById('msg-loading').style.display = 'block';
-  document.getElementById('tbody').innerHTML = '';
+  cellCache = {};
+  ALL = []; filtered = [];
+  renderTable(); renderPager();
+
+  // Show skeleton rows while loading
+  var tbody = document.getElementById('tbody');
+  tbody.innerHTML = Array(10).fill(
+    '<tr class="skel-row">' + Array(9).fill('<td><div class="skel"></div></td>').join('') + '</tr>'
+  ).join('');
+  document.getElementById('msg-loading').style.display = 'none';
   document.getElementById('msg-empty').style.display = 'none';
+
   try {
     var res = await gsGet(GS_URL, { action: 'get' });
     if (res.error) throw new Error(res.error);
@@ -612,16 +650,15 @@ async function loadSites() {
     applyFilters();
   } catch(e) {
     syncDot('err');
-    document.getElementById('msg-loading').style.display = 'none';
+    tbody.innerHTML = '';
     showToast('Load error: ' + e.message, true);
   }
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 function updateStats() {
-  document.getElementById('st-total').textContent   = ALL.length;
+  document.getElementById('st-total').textContent = ALL.length;
   document.getElementById('st-2g').textContent = ALL.filter(function(s){ return isTrue(s.tech_2g); }).length;
-  document.getElementById('st-3g').textContent = ALL.filter(function(s){ return isTrue(s.tech_3g); }).length;
   document.getElementById('st-4g').textContent = ALL.filter(function(s){ return isTrue(s.tech_4g); }).length;
   document.getElementById('st-5g').textContent = ALL.filter(function(s){ return isTrue(s.tech_5g); }).length;
 }
@@ -836,18 +873,6 @@ var BAND_META = {
     {key:'lac',lbl:'LAC'},{key:'m_tilt',lbl:'M Tilt'},{key:'ret',lbl:'RET'},
     {key:'azimuth',lbl:'Azimuth'},{key:'height',lbl:'Height'},{key:'notes',lbl:'Notes'}
   ]},
-  U900:  { gen:'3G', cls:'b3g', fields:[
-    {key:'config',lbl:'Config'},{key:'nodeb_name',lbl:'NodeB Name'},{key:'cell_name',lbl:'Cell Name'},
-    {key:'rnc',lbl:'RNC'},{key:'uarfcn',lbl:'UARFCN'},{key:'lac',lbl:'LAC'},
-    {key:'psc',lbl:'PSC'},{key:'m_tilt',lbl:'M Tilt'},{key:'ret',lbl:'RET'},
-    {key:'azimuth',lbl:'Azimuth'},{key:'height',lbl:'Height'},{key:'notes',lbl:'Notes'}
-  ]},
-  U2100: { gen:'3G', cls:'b3g', fields:[
-    {key:'config',lbl:'Config'},{key:'nodeb_name',lbl:'NodeB Name'},{key:'cell_name',lbl:'Cell Name'},
-    {key:'rnc',lbl:'RNC'},{key:'uarfcn',lbl:'UARFCN'},{key:'lac',lbl:'LAC'},
-    {key:'psc',lbl:'PSC'},{key:'m_tilt',lbl:'M Tilt'},{key:'ret',lbl:'RET'},
-    {key:'azimuth',lbl:'Azimuth'},{key:'height',lbl:'Height'},{key:'notes',lbl:'Notes'}
-  ]},
   L700:  { gen:'4G', cls:'b4g', fields:[
     {key:'config',lbl:'Config'},{key:'enodeb_name',lbl:'eNodeB Name'},{key:'cell_name',lbl:'Cell Name'},
     {key:'earfcn',lbl:'EARFCN'},{key:'pci',lbl:'PCI'},{key:'ci',lbl:'Cell ID'},
@@ -916,51 +941,72 @@ function openCellModal() {
 
   document.getElementById('cell-title').textContent = s.site_id + ' — Cell Details';
   document.getElementById('cell-sub').textContent = s.site_name + (s.site_type ? '  ·  ' + s.site_type : '');
-
-  var tabsHtml = '', panelsHtml = '';
+  document.getElementById('cell-tabs-row').innerHTML = '';
+  document.getElementById('cell-panels').innerHTML = '<div class="no-cells" id="cell-loading">⏳ Loading cell data...</div>';
+  document.getElementById('cell-edit-btn').style.display = 'none';
+  document.getElementById('cell-cancel-btn').style.display = 'none';
+  document.getElementById('cell-save-btn').style.display = 'none';
+  document.getElementById('modal-cell').classList.add('open');
 
   if (!activeBands.length) {
-    panelsHtml = '<div class="no-cells">No bands configured for this site.</div>';
-  } else {
-    activeBands.forEach(function(band, i) {
-      var meta = BAND_META[band];
-      var bKey = band.toLowerCase();
-      var isActive = i === 0;
-
-      tabsHtml += '<button class="cell-tab' + (isActive ? ' active' : '') + '" onclick="switchCellTab(\'' + band + '\')">' +
-        '<span class="badge ' + meta.cls + '" style="margin-right:4px">' + meta.gen + '</span>' + band +
-        '</button>';
-
-      var fieldsHtml = meta.fields.map(function(f) {
-        var colKey = 'cell_' + bKey + '_' + f.key;
-        var val = s[colKey] || '';
-        var isEmpty = !val;
-        return '<div class="cell-field">' +
-          '<label>' + f.lbl + '</label>' +
-          '<div class="cv' + (isEmpty ? ' empty' : '') + '" data-col="' + colKey + '">' + (isEmpty ? '—' : escHtml(val)) + '</div>' +
-          '<input class="ce" data-col="' + colKey + '" value="' + escHtml(val) + '" placeholder="' + f.lbl + '" style="display:none"/>' +
-          '</div>';
-      }).join('');
-
-      panelsHtml += '<div class="cell-panel' + (isActive ? ' active' : '') + '" id="cell-panel-' + band + '">' +
-        '<div class="band-hdr">' +
-          '<span class="badge ' + meta.cls + ' band-hdr-badge">' + band + '</span>' +
-          '<span style="font-size:13px;color:#888">' + meta.gen + ' Band Configuration</span>' +
-        '</div>' +
-        '<div class="cell-grid">' + fieldsHtml + '</div>' +
-        '</div>';
-    });
+    document.getElementById('cell-panels').innerHTML = '<div class="no-cells">No bands configured for this site.</div>';
+    return;
   }
+
+  // Use cached cell data if available, otherwise fetch
+  var cacheKey = String(s._row);
+  if (cellCache[cacheKey]) {
+    renderCellPanels(s, activeBands, cellCache[cacheKey]);
+  } else {
+    gsGet(GS_URL, { action: 'getCells', _row: s._row })
+      .then(function(res) {
+        if (res.error) throw new Error(res.error);
+        // Merge cell data into cached object and local site record
+        cellCache[cacheKey] = res.cells || {};
+        Object.assign(s, cellCache[cacheKey]);
+        renderCellPanels(s, activeBands, cellCache[cacheKey]);
+      })
+      .catch(function(e) {
+        document.getElementById('cell-panels').innerHTML = '<div class="no-cells">Error loading cell data: ' + escHtml(e.message) + '</div>';
+      });
+  }
+}
+
+function renderCellPanels(s, activeBands, cellData) {
+  var tabsHtml = '', panelsHtml = '';
+
+  activeBands.forEach(function(band, i) {
+    var meta = BAND_META[band];
+    var bKey = band.toLowerCase();
+    var isActive = i === 0;
+
+    tabsHtml += '<button class="cell-tab' + (isActive ? ' active' : '') + '" onclick="switchCellTab(\'' + band + '\')">' +
+      '<span class="badge ' + meta.cls + '" style="margin-right:4px">' + meta.gen + '</span>' + band +
+      '</button>';
+
+    var fieldsHtml = meta.fields.map(function(f) {
+      var colKey = 'cell_' + bKey + '_' + f.key;
+      var val = cellData[colKey] || '';
+      var isEmpty = !val;
+      return '<div class="cell-field">' +
+        '<label>' + f.lbl + '</label>' +
+        '<div class="cv' + (isEmpty ? ' empty' : '') + '" data-col="' + colKey + '">' + (isEmpty ? '—' : escHtml(val)) + '</div>' +
+        '<input class="ce" data-col="' + colKey + '" value="' + escHtml(val) + '" placeholder="' + f.lbl + '" style="display:none"/>' +
+        '</div>';
+    }).join('');
+
+    panelsHtml += '<div class="cell-panel' + (isActive ? ' active' : '') + '" id="cell-panel-' + band + '">' +
+      '<div class="band-hdr">' +
+        '<span class="badge ' + meta.cls + ' band-hdr-badge">' + band + '</span>' +
+        '<span style="font-size:13px;color:#888">' + meta.gen + ' Band Configuration</span>' +
+      '</div>' +
+      '<div class="cell-grid">' + fieldsHtml + '</div>' +
+      '</div>';
+  });
 
   document.getElementById('cell-tabs-row').innerHTML = tabsHtml;
   document.getElementById('cell-panels').innerHTML = panelsHtml;
-
-  // Show edit button only for admins and when there are bands
-  document.getElementById('cell-edit-btn').style.display = (IS_ADMIN && activeBands.length) ? '' : 'none';
-  document.getElementById('cell-cancel-btn').style.display = 'none';
-  document.getElementById('cell-save-btn').style.display = 'none';
-
-  document.getElementById('modal-cell').classList.add('open');
+  document.getElementById('cell-edit-btn').style.display = IS_ADMIN ? '' : 'none';
 }
 
 function switchCellTab(band) {
@@ -991,8 +1037,8 @@ async function saveCellDetails() {
   // Carry over all existing site fields so the row isn't wiped
   var siteFields = ['site_id','site_name','site_status','site_type','address','site_tag','brgy',
     'city','province','region','area','latitude','longitude',
-    'tech_2g','tech_3g','tech_4g','tech_5g',
-    'band_g900','band_g1800','band_u900','band_u2100',
+    'tech_2g','tech_4g','tech_5g',
+    'band_g900','band_g1800',
     'band_l700','band_l850','band_l1800','band_l2100','band_l2300','band_l2600',
     'band_nr700','band_nr2100','band_nr2600','band_nr3500'];
   siteFields.forEach(function(k){ params[k] = s[k] || ''; });
@@ -1021,6 +1067,8 @@ async function saveCellDetails() {
       el.classList.toggle('empty', !val);
     });
 
+    // Invalidate cache so next open re-fetches fresh data
+    delete cellCache[String(s._row)];
     toggleCellEdit(false);
     syncDot('ok');
     showToast('Cell details saved!');
