@@ -172,6 +172,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
 .kmz-rm-btn:hover{background:#fee;color:#c00}
 .kmz-opacity-row{display:flex;align-items:center;gap:8px;padding-top:8px;margin-top:6px;border-top:1px solid #f0f0f0}
 .kmz-opacity-slider{flex:1;accent-color:#23ada7;cursor:pointer}
+.kmz-overlay{image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;image-rendering:pixelated}
 .user-name{font-size:13px;font-weight:600;color:#1a1a2e}
 .user-meta{font-size:12px;color:#aaa;margin-left:6px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none;white-space:nowrap}
@@ -1063,8 +1064,8 @@ function showDetail(idx) {
         '<div id="kmz-list-' + mapId + '"></div>' +
         '<div id="kmz-oprow-' + mapId + '" class="kmz-opacity-row" style="display:none">' +
           '<span style="font-size:11px;color:#888;white-space:nowrap">Opacity</span>' +
-          '<input type="range" id="kmz-opacity-' + mapId + '" class="kmz-opacity-slider" min="0" max="100" value="70" oninput="updateKmzOpacity(\'' + mapId + '\', this.value)">' +
-          '<span id="kmz-oplbl-' + mapId + '" style="font-size:11px;color:#555;min-width:30px;text-align:right">70%</span>' +
+          '<input type="range" id="kmz-opacity-' + mapId + '" class="kmz-opacity-slider" min="0" max="100" value="100" oninput="updateKmzOpacity(\'' + mapId + '\', this.value)">' +
+          '<span id="kmz-oplbl-' + mapId + '" style="font-size:11px;color:#555;min-width:30px;text-align:right">100%</span>' +
         '</div>' +
       '</div>' +
       '</div>';
@@ -1252,13 +1253,12 @@ async function _parseAndAddKmz(mapId, name, source) {
     var imgUrl = URL.createObjectURL(imgBlob);
 
     var opSlider = document.getElementById('kmz-opacity-' + mapId);
-    var opacity = opSlider ? (parseInt(opSlider.value) / 100) : 0.7;
+    var opacity = opSlider ? (parseInt(opSlider.value) / 100) : 1.0;
 
     var layer = L.imageOverlay(imgUrl, [[south, west], [north, east]], {
-      opacity: opacity, interactive: false, zIndex: 200
+      opacity: opacity, interactive: false, zIndex: 200, className: 'kmz-overlay'
     });
     layer.addTo(_detailMap);
-    try { _detailMap.fitBounds([[south, west], [north, east]]); } catch(e) {}
 
     var lid = 'kmzl-' + (++_kmzCounter);
     _kmzLayers[lid] = { layer: layer, imgUrl: imgUrl, visible: true };
