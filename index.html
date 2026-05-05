@@ -208,7 +208,7 @@ tbody td{padding:10px 14px;vertical-align:middle}
       <div style="display:flex;gap:8px;align-items:center">
         <div class="sync"><div class="dot" id="sync-dot"></div><span id="sync-lbl">Synced</span></div>
         <button class="btn-sec" id="user-mgmt-btn" style="display:none" onclick="openUserMgmt()">&#128100; Manage Users</button>
-        <button class="btn-sec" onclick="loadSites()">&#8635; Refresh</button>
+        <button class="btn-sec" onclick="refreshSites()">&#8635; Refresh</button>
         <button class="btn-sec" onclick="doLogout()">Logout</button>
       </div>
     </div>
@@ -747,13 +747,32 @@ function gsGet(url, params) {
     });
 }
 
-async function loadSites() {
+var CACHE_KEY = 'tsdb_sites_cache';
+var CACHE_TTL  = 30 * 60 * 1000; // 30 minutes
+
+async function loadSites(forceRefresh) {
   syncDot('spin');
   cellCache = {};
   ALL = []; filtered = [];
   renderTable(); renderPager();
 
-  // Show skeleton rows while loading
+  // Option A: serve from localStorage cache if fresh
+  if (!forceRefresh) {
+    try {
+      var cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+      if (cached && cached.ts && (Date.now() - cached.ts) < CACHE_TTL && cached.rows && cached.rows.length) {
+        ALL = cached.rows;
+        var ageMin = Math.round((Date.now() - cached.ts) / 60000);
+        syncDot('ok');
+        document.getElementById('sync-lbl').textContent = 'Cached' + (ageMin > 0 ? ' · ' + ageMin + 'm ago' : '');
+        updateStats();
+        applyFilters();
+        return;
+      }
+    } catch(e) {}
+  }
+
+  // Show skeleton rows while fetching from network
   var tbody = document.getElementById('tbody');
   tbody.innerHTML = Array(10).fill(
     '<tr class="skel-row">' + Array(9).fill('<td><div class="skel"></div></td>').join('') + '</tr>'
@@ -764,7 +783,17 @@ async function loadSites() {
   try {
     var res = await gsGet(GS_URL, { action: 'get' });
     if (res.error) throw new Error(res.error);
-    ALL = res.rows || [];
+    // Option C: compact array format from GAS; fall back to legacy object format
+    if (res.headers && Array.isArray(res.rows)) {
+      ALL = res.rows.map(function(r) {
+        var o = {};
+        res.headers.forEach(function(h, i){ o[h] = r[i]; });
+        return o;
+      });
+    } else {
+      ALL = res.rows || [];
+    }
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows: ALL })); } catch(e) {}
     syncDot('ok');
     updateStats();
     applyFilters();
@@ -773,6 +802,11 @@ async function loadSites() {
     tbody.innerHTML = '';
     showToast('Load error: ' + e.message, true);
   }
+}
+
+function refreshSites() {
+  localStorage.removeItem(CACHE_KEY);
+  loadSites(true);
 }
 
 // â”€â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1269,7 +1303,8 @@ async function saveSite() {
     if (res.error) throw new Error(res.error);
     closeModal();
     showToast(editRow ? 'Site updated!' : 'Site added!');
-    await loadSites();
+    localStorage.removeItem(CACHE_KEY);
+    await loadSites(true);
   } catch(e) {
     syncDot('err');
     showToast('Save error: ' + e.message, true);
@@ -1286,7 +1321,8 @@ async function deleteSite() {
     if (res.error) throw new Error(res.error);
     closeModal();
     showToast('Site deleted.');
-    await loadSites();
+    localStorage.removeItem(CACHE_KEY);
+    await loadSites(true);
   } catch(e) {
     syncDot('err');
     showToast('Delete error: ' + e.message, true);
