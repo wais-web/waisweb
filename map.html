@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WAIS — Map View</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2e;overflow:hidden}
+
+/* ── Top bar ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 18px;background:#fff;border-bottom:1px solid #e8e8e8;flex-shrink:0;gap:12px;z-index:500}
+.topbar-left{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;text-decoration:none;border:1px solid #d0d0d0;border-radius:7px;padding:5px 12px;background:#fff;cursor:pointer;white-space:nowrap;transition:background .12s}
+.back-btn:hover{background:#f5f5f5;color:#1a1a2e}
+.page-title{font-size:15px;font-weight:700;color:#1a1a2e;white-space:nowrap}
+.sync-pill{display:flex;align-items:center;gap:6px;font-size:11px;color:#888}
+.dot{width:8px;height:8px;border-radius:50%;background:#639922;flex-shrink:0}
+.dot.spin{background:#BA7517;animation:pulse 1s infinite}
+.dot.err{background:#E24B4A}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+/* ── Toolbar strip ── */
+.map-strip{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fff;border-bottom:1px solid #e8e8e8;flex-shrink:0;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:8px;background:#f5f5f5;border:1px solid #d8d8d8;border-radius:8px;padding:0 12px;height:34px;width:230px;flex:none}
+.search-box input{border:none;outline:none;background:transparent;color:#1a1a2e;font-size:13px;width:100%}
+.fb{font-size:12px;padding:4px 12px;border-radius:999px;border:1px solid #d0d0d0;background:#fff;color:#555;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap}
+.fb.on{background:#23ada7;border-color:#23ada7;color:#fff}
+.strip-sep{width:1px;height:24px;background:#e8e8e8;flex-shrink:0;margin:0 2px}
+.tbtn{height:34px;padding:0 13px;font-size:12px;font-weight:500;border:1px solid #d0d0d0;border-radius:7px;background:#fff;color:#555;cursor:pointer;white-space:nowrap;transition:all .12s}
+.tbtn:hover{background:#f0f0f0}
+.tbtn.active{background:#1a1a2e;border-color:#1a1a2e;color:#fff}
+.gps-btn{border-color:#1E88E5;color:#1565C0;background:#f0f7ff}
+.gps-btn:hover{background:#e0f0ff}
+.gps-btn.located{background:#e0f0ff;border-color:#1E88E5;color:#1565C0;font-weight:600}
+.legend{display:flex;gap:12px;align-items:center;font-size:11px;color:#666;flex-wrap:wrap;margin-left:4px}
+.leg{display:flex;align-items:center;gap:5px}
+.leg-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+
+/* ── Map ── */
+#map-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px)}
+#map-outer{position:relative;flex:1;min-height:0}
+#map{position:absolute;inset:0;width:100%;height:100%}
+
+/* ── Site count badge ── */
+#site-count{position:absolute;bottom:30px;left:14px;z-index:1000;background:rgba(255,255,255,.92);border:1px solid #e0e0e0;border-radius:6px;padding:5px 10px;font-size:11px;color:#555;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* ── GPS pulse animation ── */
+@keyframes gpsPulse{0%{box-shadow:0 0 0 0 rgba(30,136,229,.55)}70%{box-shadow:0 0 0 10px rgba(30,136,229,0)}100%{box-shadow:0 0 0 0 rgba(30,136,229,0)}}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+#toast.terr{background:#A32D2D}
+
+/* KMZ layer list */
+.kmz-layer-row{display:flex;align-items:center;gap:4px;padding:1px 0}
+.kmz-layer-name{font-size:10px;flex:1;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px}
+.kmz-rm-btn{width:15px;height:15px;border:none;background:none;color:#bbb;cursor:pointer;font-size:12px;line-height:1;border-radius:2px;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kmz-rm-btn:hover{color:#c00}
+</style>
+</head>
+<body>
+
+<!-- Top navigation bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <a class="back-btn" href="index.html">&#8592; Back to Sites</a>
+    <span class="page-title">&#128506; Map View</span>
+    <div class="sync-pill"><div class="dot" id="sync-dot"></div><span id="sync-lbl">Loading…</span></div>
+  </div>
+  <div class="topbar-right">
+    <span id="welcome-msg" style="font-size:12px;color:#888"></span>
+  </div>
+</div>
+
+<!-- Toolbar strip -->
+<div id="map-wrap">
+  <div class="map-strip">
+    <!-- Search -->
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#aaa" stroke-width="1.3"/><path d="M11 11l3 3" stroke="#aaa" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <input id="map-search" placeholder="Search Site ID or Name…" oninput="onSearch(this.value)"/>
+    </div>
+
+    <!-- Tech filters -->
+    <div id="tech-filters" style="display:flex;gap:5px">
+      <button class="fb on" data-v="all" onclick="setTechFilter(this,'all')">All</button>
+      <button class="fb" data-v="2G"  onclick="setTechFilter(this,'2G')">2G</button>
+      <button class="fb" data-v="4G"  onclick="setTechFilter(this,'4G')">4G</button>
+      <button class="fb" data-v="5G"  onclick="setTechFilter(this,'5G')">5G</button>
+    </div>
+
+    <div class="strip-sep"></div>
+
+    <!-- Tile toggle -->
+    <button class="tbtn active" id="btn-map"       onclick="setTile('map')">Map</button>
+    <button class="tbtn"        id="btn-satellite"  onclick="setTile('satellite')">Satellite</button>
+
+    <div class="strip-sep"></div>
+
+    <!-- GPS -->
+    <button class="tbtn gps-btn" id="gps-btn" onclick="locateMe()">&#127757; My Location</button>
+
+    <div class="strip-sep"></div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <span class="leg"><span class="leg-dot" style="background:#2E7D32"></span>On-Air</span>
+      <span class="leg"><span class="leg-dot" style="background:#aaa"></span>Inactive</span>
+      <span class="leg"><span class="leg-dot" style="background:#1E88E5"></span>You</span>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div id="map-outer">
+    <div id="map"></div>
+    <div id="site-count">— sites</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── Config — keep in sync with index.html ───────────────────────────────────
+var GS_URL = 'https://script.google.com/macros/s/AKfycbzdNEzS3t6mnw7wWBxm3UFmHUtz39PWvmpS2BnSnRyvsOuhk6LS1H-V-58nsx25BwEenw/exec';
+var KMZ_LAYERS = [
+  { name: 'VISMIN Sectors', file: 'VisMin_Existing_Sectors_2026_WK16_04202026.kmz' }
+];
+var CACHE_KEY = 'tsdb_sites_cache';
+var CACHE_TTL  = 30 * 60 * 1000;
+var TECHS = ['2G','4G','5G'];
+var BANDS = ['G900','G1800','L700','L850','L1800','L2100','L2300','L2600','NR700','NR2100','NR2600','NR3500'];
+
+// ─── Auth check ───────────────────────────────────────────────────────────────
+var SESSION = null;
+try { SESSION = JSON.parse(sessionStorage.getItem('tsdb_session') || 'null'); } catch(e) {}
+if (!SESSION || !SESSION.username) {
+  window.location.replace('index.html');
+}
+document.getElementById('welcome-msg').textContent = SESSION ? (SESSION.display_name || SESSION.username) : '';
+
+// ─── State ────────────────────────────────────────────────────────────────────
+var ALL = [];
+var _markers = [];       // { marker, site, visible }
+var _techFilter = 'all';
+var _searchQ = '';
+var _gpsMarker = null;
+var _gpsCircle = null;
+var _tileLayer = null;
+var _kmzLayers = {};
+var _kmzCounter = 0;
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function normStr(v){ return String(v||'').trim().toLowerCase(); }
+function isTrue(v){ return v===true||v===1||normStr(v)==='true'||normStr(v)==='1'; }
+function isTech(s,t){ return isTrue(s['tech_'+t.toLowerCase()]); }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function syncDot(state){
+  var d = document.getElementById('sync-dot');
+  var l = document.getElementById('sync-lbl');
+  d.className = 'dot' + (state==='spin'?' spin':state==='err'?' err':'');
+  l.textContent = state==='spin'?'Loading…':state==='err'?'Error':'Synced';
+}
+
+var _toastTimer;
+function showToast(msg, isErr){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (isErr?' terr':'');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ el.className=''; }, 3500);
+}
+
+function gsGet(url, params){
+  var qs = new URLSearchParams(params).toString();
+  return fetch(qs ? url+'?'+qs : url, { redirect:'follow' }).then(function(r){
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  });
+}
+
+// ─── Map init ─────────────────────────────────────────────────────────────────
+var map = L.map('map', { zoomControl: true, scrollWheelZoom: true });
+map.setView([12.8797, 121.7740], 6);
+
+_tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+// ─── KMZ control (top-right) ──────────────────────────────────────────────────
+var kmzCtrl = L.control({ position: 'topright' });
+kmzCtrl.onAdd = function() {
+  var div = L.DomUtil.create('div','');
+  div.style.cssText = 'background:rgba(255,255,255,.93);border-radius:6px;box-shadow:0 1px 5px rgba(0,0,0,.18);padding:6px 8px;font-family:\'Segoe UI\',sans-serif;min-width:170px';
+  L.DomEvent.disableClickPropagation(div);
+  L.DomEvent.disableScrollPropagation(div);
+  var opts = KMZ_LAYERS.length
+    ? '<option value="">— select layer —</option>' + KMZ_LAYERS.map(function(l){ return '<option value="'+escHtml(l.file)+'">'+escHtml(l.name)+'</option>'; }).join('')
+    : '<option value="" disabled>No layers configured</option>';
+  div.innerHTML =
+    '<div style="font-size:9px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">KMZ Layers</div>' +
+    '<div style="display:flex;gap:4px;align-items:center">' +
+      '<select id="kmz-sel" style="flex:1;height:22px;font-size:10px;border:1px solid #ddd;border-radius:3px;padding:0 4px;background:#fff;color:#555;outline:none">'+opts+'</select>' +
+      '<button onclick="addKmzFromSelect()" style="height:22px;width:24px;font-size:15px;line-height:1;border:1px solid #ddd;border-radius:3px;background:#fff;color:#666;cursor:pointer;flex-shrink:0;padding:0"' + (!KMZ_LAYERS.length?' disabled':'') + '>+</button>' +
+    '</div>' +
+    '<div id="kmz-list" style="margin-top:4px"></div>';
+  return div;
+};
+kmzCtrl.addTo(map);
+
+// ─── Tile switching ───────────────────────────────────────────────────────────
+function setTile(type) {
+  if (_tileLayer) map.removeLayer(_tileLayer);
+  if (type === 'satellite') {
+    _tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
+  } else {
+    _tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+  }
+  document.getElementById('btn-map').classList.toggle('active', type==='map');
+  document.getElementById('btn-satellite').classList.toggle('active', type==='satellite');
+}
+
+// ─── Tech filter ──────────────────────────────────────────────────────────────
+function setTechFilter(btn, val) {
+  document.querySelectorAll('#tech-filters .fb').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  _techFilter = val;
+  applyFilters();
+}
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+function onSearch(q) {
+  _searchQ = q;
+  applyFilters();
+  // If a single result, pan to it
+  var vis = _markers.filter(function(m){ return m.visible; });
+  if (vis.length === 1) {
+    var s = vis[0].site;
+    var lat = parseFloat(s.latitude), lon = parseFloat(s.longitude);
+    if (!isNaN(lat) && !isNaN(lon)) map.setView([lat, lon], 14);
+  }
+}
+
+// ─── Filter markers ───────────────────────────────────────────────────────────
+function applyFilters() {
+  var q = _searchQ.toLowerCase();
+  var shown = 0;
+  _markers.forEach(function(obj) {
+    var s = obj.site;
+    var techOk = _techFilter === 'all' || isTech(s, _techFilter);
+    var searchOk = !q ||
+      (s.site_id||'').toLowerCase().includes(q) ||
+      (s.site_name||'').toLowerCase().includes(q);
+    var show = techOk && searchOk;
+    if (show && !obj.visible)  { obj.marker.addTo(map); obj.visible = true; }
+    if (!show && obj.visible)  { map.removeLayer(obj.marker); obj.visible = false; }
+    if (show) shown++;
+  });
+  var cnt = document.getElementById('site-count');
+  if (cnt) cnt.textContent = shown.toLocaleString() + ' site' + (shown !== 1 ? 's' : '');
+}
+
+// ─── Build a single site marker ───────────────────────────────────────────────
+function makeMarker(s) {
+  var lat = parseFloat(s.latitude), lon = parseFloat(s.longitude);
+  if (isNaN(lat) || isNaN(lon)) return null;
+  var onair = normStr(s.site_status) === 'on-air';
+  var color  = onair ? '#2E7D32' : '#999';
+  var shadow = onair ? 'rgba(46,125,50,.25)' : 'rgba(0,0,0,.12)';
+
+  var icon = L.divIcon({
+    className: '',
+    html: '<div style="position:relative;width:0;height:0">' +
+          '<div style="position:absolute;bottom:13px;left:0;transform:translateX(-50%);background:'+color+';color:#fff;font-size:8.5px;font-weight:700;font-family:\'Segoe UI\',sans-serif;padding:2px 5px;border-radius:3px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.22);letter-spacing:.02em">' + escHtml(s.site_id) + '</div>' +
+          '<div style="position:absolute;bottom:5px;left:-1px;width:2px;height:8px;background:'+color+';transform:translateX(-50%)"></div>' +
+          '<div style="position:absolute;top:-5px;left:-5px;width:10px;height:10px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 0 0 2px '+shadow+'"></div>' +
+          '</div>',
+    iconSize: [0,0],
+    iconAnchor: [0,0]
+  });
+
+  // Popup — site info only, no detail modal link
+  var techs = TECHS.filter(function(t){ return isTech(s,t); });
+  var techBadges = techs.map(function(t){
+    var clr = t==='2G'?'#3B6D11':t==='4G'?'#3C3489':'#993C1D';
+    var bg  = t==='2G'?'#EAF3DE':t==='4G'?'#EEEDFE':'#FAECE7';
+    return '<span style="display:inline-block;font-size:10px;padding:1px 6px;border-radius:999px;font-weight:600;background:'+bg+';color:'+clr+';margin:1px">'+t+'</span>';
+  }).join('');
+
+  var bands = BANDS.filter(function(b){ return isTrue(s['band_'+b.toLowerCase()]); });
+  var bandStr = bands.length ? bands.join(', ') : '—';
+
+  var statusHtml = onair
+    ? '<span style="color:#2E7D32;font-weight:700;font-size:11px">● On-Air</span>'
+    : '<span style="color:#C62828;font-weight:700;font-size:11px">● Inactive</span>';
+
+  var popup =
+    '<div style="font-size:12px;font-family:\'Segoe UI\',sans-serif;min-width:200px;line-height:1.7">' +
+    '<div style="font-size:14px;font-weight:700;color:#23ada7;font-family:monospace;margin-bottom:2px">' + escHtml(s.site_id) + '</div>' +
+    '<div style="font-weight:600;color:#1a1a2e;margin-bottom:4px">' + escHtml(s.site_name||'—') + '</div>' +
+    '<div style="margin-bottom:4px">' + statusHtml + (s.site_type ? '&nbsp;&nbsp;<span style="color:#888;font-size:11px">'+escHtml(s.site_type)+'</span>' : '') + '</div>' +
+    (techBadges ? '<div style="margin-bottom:4px">' + techBadges + '</div>' : '') +
+    '<div style="color:#888;font-size:11px;margin-bottom:2px">Bands: ' + escHtml(bandStr) + '</div>' +
+    '<div style="color:#aaa;font-size:10px;margin-bottom:2px">' + [s.brgy, s.city, s.province].filter(Boolean).map(escHtml).join(', ') + '</div>' +
+    '<div style="color:#bbb;font-size:10px">'+lat.toFixed(6)+', '+lon.toFixed(6)+'</div>' +
+    '</div>';
+
+  var marker = L.marker([lat, lon], { icon: icon, title: s.site_id + ' — ' + (s.site_name||'') });
+  marker.bindPopup(popup, { maxWidth: 260 });
+  return { marker: marker, site: s, visible: true };
+}
+
+// ─── Build all markers ────────────────────────────────────────────────────────
+function buildMarkers() {
+  _markers.forEach(function(obj){ map.removeLayer(obj.marker); });
+  _markers = [];
+  ALL.forEach(function(s) {
+    var obj = makeMarker(s);
+    if (!obj) return;
+    obj.marker.addTo(map);
+    _markers.push(obj);
+  });
+  applyFilters();
+}
+
+// ─── Load site data ───────────────────────────────────────────────────────────
+async function loadData() {
+  syncDot('spin');
+  // Try cache first
+  try {
+    var cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cached && cached.ts && (Date.now()-cached.ts) < CACHE_TTL && cached.rows && cached.rows.length) {
+      ALL = cached.rows;
+      var age = Math.round((Date.now()-cached.ts)/60000);
+      syncDot('ok');
+      document.getElementById('sync-lbl').textContent = 'Cached' + (age>0?' · '+age+'m ago':'');
+      buildMarkers();
+      return;
+    }
+  } catch(e) {}
+  // Fetch from network
+  try {
+    var res = await gsGet(GS_URL, { action: 'get' });
+    if (res.error) throw new Error(res.error);
+    if (res.headers && Array.isArray(res.rows)) {
+      ALL = res.rows.map(function(r){
+        var o = {}; res.headers.forEach(function(h,i){ o[h]=r[i]; }); return o;
+      });
+    } else {
+      ALL = res.rows || [];
+    }
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), rows: ALL })); } catch(e) {}
+    syncDot('ok');
+    buildMarkers();
+  } catch(e) {
+    syncDot('err');
+    showToast('Load error: '+e.message, true);
+  }
+}
+
+// ─── GPS / My Location ────────────────────────────────────────────────────────
+function locateMe() {
+  if (!navigator.geolocation) { showToast('Geolocation not supported.', true); return; }
+  var btn = document.getElementById('gps-btn');
+  btn.textContent = '⏳ Locating…'; btn.disabled = true;
+
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      var lat = pos.coords.latitude, lon = pos.coords.longitude, acc = pos.coords.accuracy;
+      if (_gpsMarker) { map.removeLayer(_gpsMarker); _gpsMarker = null; }
+      if (_gpsCircle) { map.removeLayer(_gpsCircle); _gpsCircle = null; }
+
+      _gpsCircle = L.circle([lat, lon], {
+        radius: acc, color: '#1565C0', weight: 1,
+        fillColor: '#1E88E5', fillOpacity: 0.12
+      }).addTo(map);
+
+      var youIcon = L.divIcon({
+        className: '',
+        html: '<div style="position:relative;width:0;height:0">' +
+              '<div style="position:absolute;top:-22px;left:0;transform:translateX(-50%);background:#1565C0;color:#fff;font-size:9px;font-weight:700;font-family:\'Segoe UI\',sans-serif;padding:2px 7px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25)">You are here</div>' +
+              '<div style="position:absolute;top:-5px;left:-1px;width:2px;height:8px;background:#1565C0;transform:translateX(-50%)"></div>' +
+              '<div style="position:absolute;top:-14px;left:-7px;width:14px;height:14px;border-radius:50%;background:#1E88E5;border:2.5px solid #fff;box-shadow:0 0 0 3px rgba(30,136,229,.3);animation:gpsPulse 1.6s ease-out infinite"></div>' +
+              '</div>',
+        iconSize: [0,0], iconAnchor: [0,0]
+      });
+
+      _gpsMarker = L.marker([lat, lon], { icon: youIcon, zIndexOffset: 9000 })
+        .bindPopup(
+          '<div style="font-size:12px;font-family:\'Segoe UI\',sans-serif;line-height:1.7">' +
+          '<b>📍 Your Location</b><br>' +
+          'Lat: ' + lat.toFixed(6) + '<br>' +
+          'Lon: ' + lon.toFixed(6) + '<br>' +
+          'Accuracy: ±' + Math.round(acc) + ' m' +
+          '</div>'
+        )
+        .addTo(map)
+        .openPopup();
+
+      map.setView([lat, lon], 13);
+      showToast('Location found · ±' + Math.round(acc) + ' m accuracy');
+      btn.innerHTML = '🌍 My Location';
+      btn.disabled = false;
+      btn.classList.add('located');
+    },
+    function(err) {
+      var msg = err.code===1 ? 'Location access denied.' : err.code===3 ? 'Location request timed out.' : 'Location unavailable.';
+      showToast(msg, true);
+      btn.innerHTML = '🌍 My Location'; btn.disabled = false;
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+  );
+}
+
+// ─── KMZ loading ─────────────────────────────────────────────────────────────
+function addKmzFromSelect() {
+  var sel = document.getElementById('kmz-sel');
+  if (!sel || !sel.value) { showToast('Select a layer first', true); return; }
+  var name = sel.options[sel.selectedIndex].text;
+  parseAndAddKmz(name, sel.value);
+}
+
+async function parseAndAddKmz(name, source) {
+  if (typeof JSZip === 'undefined') { showToast('JSZip library not loaded', true); return; }
+  if (typeof source === 'string' && window.location.protocol === 'file:') {
+    showToast('Cannot fetch files locally. Access via HTTP/GitHub Pages.', true); return;
+  }
+  showToast('Loading KMZ…');
+  try {
+    var ab;
+    if (source instanceof File) {
+      ab = await new Promise(function(res, rej) {
+        var fr = new FileReader();
+        fr.onload = function(e){ res(e.target.result); };
+        fr.onerror = rej;
+        fr.readAsArrayBuffer(source);
+      });
+    } else {
+      var resp = await fetch(source);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — check filename matches file in repo');
+      ab = await resp.arrayBuffer();
+    }
+
+    var zip = await JSZip.loadAsync(ab);
+    var kmlEntry = null;
+    zip.forEach(function(path, entry) {
+      if (!kmlEntry && path.toLowerCase().endsWith('.kml')) kmlEntry = entry;
+    });
+    if (!kmlEntry) throw new Error('No KML file found in KMZ');
+    var kmlText = await kmlEntry.async('string');
+    var kmlDoc = new DOMParser().parseFromString(kmlText, 'text/xml');
+
+    // Parse styles
+    var styles = {};
+    kmlDoc.querySelectorAll('Style[id]').forEach(function(s) {
+      var lc = s.querySelector('LineStyle color');
+      var pc = s.querySelector('PolyStyle color');
+      var w  = s.querySelector('LineStyle width');
+      var f  = s.querySelector('PolyStyle fill');
+      styles[s.getAttribute('id')] = {
+        lineColor: lc ? lc.textContent.trim() : null,
+        polyColor: pc ? pc.textContent.trim() : null,
+        width: w ? parseFloat(w.textContent)||1 : 1,
+        fill:  f ? f.textContent.trim()!=='0' : true
+      };
+    });
+    kmlDoc.querySelectorAll('StyleMap[id]').forEach(function(sm) {
+      sm.querySelectorAll('Pair').forEach(function(pair) {
+        var key = pair.querySelector('key'), url = pair.querySelector('styleUrl');
+        if (key && url && key.textContent.trim()==='normal') {
+          var ref = url.textContent.trim().replace(/^#/,'');
+          if (styles[ref]) styles[sm.getAttribute('id')] = styles[ref];
+        }
+      });
+    });
+
+    function kmlToHex(c) {
+      if (!c || c.length<8) return { hex:'#3388ff', a:1 };
+      var a=parseInt(c.slice(0,2),16)/255, b=parseInt(c.slice(2,4),16),
+          g=parseInt(c.slice(4,6),16), r=parseInt(c.slice(6,8),16);
+      return { hex:'#'+('0'+r.toString(16)).slice(-2)+('0'+g.toString(16)).slice(-2)+('0'+b.toString(16)).slice(-2), a:a };
+    }
+    function parseLLs(txt) {
+      return txt.trim().split(/\s+/).map(function(c){ var p=c.split(','); return [parseFloat(p[1]),parseFloat(p[0])]; }).filter(function(ll){ return !isNaN(ll[0])&&!isNaN(ll[1]); });
+    }
+
+    var op = 0.4, group = L.featureGroup(), n = 0;
+    kmlDoc.querySelectorAll('Placemark').forEach(function(pm) {
+      var su = pm.querySelector('styleUrl');
+      var st = su ? (styles[su.textContent.trim().replace(/^#/,'')]||{}) : {};
+      var lc = kmlToHex(st.lineColor), pc = kmlToHex(st.polyColor||st.lineColor);
+      var vs = { color:lc.hex, opacity:lc.a*op, weight:st.width||1, fillColor:pc.hex, fillOpacity:st.fill!==false?pc.a*op*0.55:0 };
+
+      pm.querySelectorAll('Polygon').forEach(function(poly) {
+        var outer = poly.querySelector('outerBoundaryIs LinearRing coordinates');
+        if (!outer) return;
+        var rings = [parseLLs(outer.textContent)];
+        poly.querySelectorAll('innerBoundaryIs LinearRing coordinates').forEach(function(h){ rings.push(parseLLs(h.textContent)); });
+        if (rings[0].length>1) { L.polygon(rings, vs).addTo(group); n++; }
+      });
+      pm.querySelectorAll('LineString coordinates').forEach(function(el) {
+        var ll = parseLLs(el.textContent);
+        if (ll.length>1) { L.polyline(ll, { color:lc.hex, opacity:lc.a*op, weight:st.width||2 }).addTo(group); n++; }
+      });
+      pm.querySelectorAll('Point coordinates').forEach(function(el) {
+        var p=el.textContent.trim().split(','), la=parseFloat(p[1]), lo=parseFloat(p[0]);
+        if (!isNaN(la)&&!isNaN(lo)) { L.circleMarker([la,lo],{ radius:4, color:lc.hex, fillColor:lc.hex, fillOpacity:0.85, weight:1, opacity:op }).addTo(group); n++; }
+      });
+    });
+
+    if (!n) throw new Error('No vector features found in KMZ');
+    group.addTo(map);
+    var lid = 'kmzl-'+(++_kmzCounter);
+    _kmzLayers[lid] = { layer: group, visible: true };
+    addKmzRow(lid, name);
+    showToast('Loaded: ' + name + ' (' + n + ' features)');
+  } catch(e) {
+    showToast('KMZ error: ' + e.message, true);
+  }
+}
+
+function addKmzRow(lid, name) {
+  var list = document.getElementById('kmz-list');
+  if (!list) return;
+  var row = document.createElement('div');
+  row.className = 'kmz-layer-row';
+  row.id = 'kmzrow-'+lid;
+  row.innerHTML =
+    '<input type="checkbox" checked style="accent-color:#23ada7;cursor:pointer;flex-shrink:0" onchange="toggleKmz(\''+lid+'\',this.checked)">' +
+    '<span class="kmz-layer-name" title="'+escHtml(name)+'">'+escHtml(name)+'</span>' +
+    '<button class="kmz-rm-btn" onclick="removeKmz(\''+lid+'\')" title="Remove">&#215;</button>';
+  list.appendChild(row);
+}
+function toggleKmz(lid, vis) {
+  if (!_kmzLayers[lid]) return;
+  if (vis) _kmzLayers[lid].layer.addTo(map);
+  else _kmzLayers[lid].layer.remove();
+  _kmzLayers[lid].visible = vis;
+}
+function removeKmz(lid) {
+  if (!_kmzLayers[lid]) return;
+  try { _kmzLayers[lid].layer.remove(); } catch(e) {}
+  delete _kmzLayers[lid];
+  var row = document.getElementById('kmzrow-'+lid);
+  if (row) row.remove();
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
