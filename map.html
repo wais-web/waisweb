@@ -3,21 +3,24 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>WAIS — Map View</title>
+<title>WAIS — Site Tracker</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2e;overflow:hidden}
-.topbar{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 20px;background:#fff;border-bottom:1px solid #e8e8e8;flex-shrink:0;gap:16px}
-.topbar-logo{display:block;max-height:44px;width:auto}
-.hdr-nav{display:flex;align-items:center;gap:2px}
+.topbar{display:flex;align-items:center;justify-content:space-between;height:56px;min-height:56px;max-height:56px;padding:0 20px;background:#fff;border-bottom:1px solid #e8e8e8;gap:16px;position:sticky;top:0;z-index:100;overflow:hidden;flex-wrap:nowrap}
+.topbar-left{display:flex;align-items:center;gap:0;flex-shrink:0;height:100%}
+.topbar-logo{display:block;max-height:36px;width:auto;flex-shrink:0}
+.hdr-nav{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:12px;border-left:1px solid #e8e8e8;flex-wrap:nowrap}
 .nav-link{font-size:13px;font-weight:600;color:#888;text-decoration:none;padding:6px 14px;border-radius:7px;transition:all .15s;white-space:nowrap;background:transparent;letter-spacing:.01em}
 .nav-link:hover{color:#1a1a2e;background:#f0f0f0}
 .nav-link.active{color:#1a1a2e;background:#f0f0f0;position:relative}
 .nav-link.active::after{content:'';position:absolute;bottom:2px;left:14px;right:14px;height:2px;background:#23ada7;border-radius:2px}
-.topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:nowrap;white-space:nowrap}
+.topbar-btn{height:32px;padding:0 12px;font-size:12px;font-weight:500;border:1px solid #d0d0d0;border-radius:7px;background:#fff;color:#555;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}
+.topbar-btn:hover{background:#f5f5f5;color:#1a1a2e}
 .sync-pill{display:flex;align-items:center;gap:6px;font-size:11px;color:#888}
 .dot{width:8px;height:8px;border-radius:50%;background:#639922;flex-shrink:0}
 .dot.spin{background:#BA7517;animation:pulse 1s infinite}
@@ -96,16 +99,19 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0
 <body>
 
 <div class="topbar">
-  <img class="topbar-logo" src="waislogo2.png" alt="WAIS">
-  <nav class="hdr-nav">
-    <a class="nav-link" href="index.html">Home</a>
-    <a class="nav-link" href="tracker.html">Project Tracker</a>
-    <a class="nav-link active" href="map.html">Map View</a>
-    <a class="nav-link" href="download.html">Download</a>
-  </nav>
+  <div class="topbar-left">
+    <img class="topbar-logo" src="waislogo2.png" alt="WAIS">
+    <nav class="hdr-nav">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="tracker.html">Project Dashboard</a>
+      <a class="nav-link active" href="map.html">Site Tracker</a>
+      <a class="nav-link" href="download.html">Download</a>
+    </nav>
+  </div>
   <div class="topbar-right">
     <div class="sync-pill"><div class="dot" id="sync-dot"></div><span id="sync-lbl">Loading…</span></div>
     <span id="welcome-msg" style="font-size:12px;color:#888"></span>
+    <button onclick="if(_watchId!==null)navigator.geolocation.clearWatch(_watchId);doLogout();" class="topbar-btn">Logout</button>
   </div>
 </div>
 
@@ -163,7 +169,7 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0
     window.location.replace('index.html');
     return;
   }
-  document.getElementById('welcome-msg').textContent = sess.display_name || sess.username;
+  document.getElementById('welcome-msg').textContent = 'Welcome, ' + (sess.display_name || sess.username) + '!';
 })();
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -627,6 +633,14 @@ function clearNearest(){
 window.addEventListener('beforeunload', function(){
   if(_watchId!==null) navigator.geolocation.clearWatch(_watchId);
 });
+
+// ─── Logout ───────────────────────────────────────────────────────────────────
+function doLogout(){
+  if (!confirm('Log out?')) return;
+  if (_watchId !== null) navigator.geolocation.clearWatch(_watchId);
+  sessionStorage.removeItem('tsdb_session');
+  window.location.replace('index.html');
+}
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 loadData();
