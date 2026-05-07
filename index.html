@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>WAIS</title>
+<title>WAIS — Home</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -42,7 +42,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2
 .sync{font-size:12px;color:#888;display:flex;align-items:center;gap:6px}
 
 /* -- Top Nav -- */
-.hdr-nav{display:flex;align-items:center;gap:2px}
+.topbar{display:flex;align-items:center;justify-content:space-between;height:56px;min-height:56px;max-height:56px;padding:0 20px;background:#fff;border-bottom:1px solid #e8e8e8;gap:16px;position:sticky;top:0;z-index:100;overflow:hidden;flex-wrap:nowrap}
+.topbar-left{display:flex;align-items:center;gap:0;flex-shrink:0;height:100%}
+.topbar-logo{display:block;max-height:36px;width:auto;flex-shrink:0}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:nowrap;white-space:nowrap}
+.hdr-nav{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:12px;border-left:1px solid #e8e8e8;flex-wrap:nowrap}
 .nav-link{font-size:13px;font-weight:600;color:#888;text-decoration:none;padding:6px 14px;border-radius:7px;transition:all .15s;white-space:nowrap;border:none;background:transparent;letter-spacing:.01em}
 .nav-link:hover{color:#1a1a2e;background:#f0f0f0}
 .nav-link.active{color:#1a1a2e;background:#f0f0f0;position:relative}
@@ -78,7 +82,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2
 .fb.on{background:#23ada7;border-color:#23ada7;color:#fff}
 .btn-add{height:38px;padding:0 18px;font-size:13px;font-weight:600;border:none;border-radius:8px;background:#23ada7;color:#fff;cursor:pointer;white-space:nowrap}
 .btn-add:hover{background:#1a8f8a}
-.btn-sec{height:38px;padding:0 14px;font-size:13px;font-weight:500;border:1px solid #d0d0d0;border-radius:8px;background:#fff;color:#555;cursor:pointer;white-space:nowrap}
+.btn-sec{height:32px;padding:0 12px;font-size:12px;font-weight:500;border:1px solid #d0d0d0;border-radius:7px;background:#fff;color:#555;cursor:pointer;white-space:nowrap}
 .btn-sec:hover{background:#f5f5f5}
 
 /* â”€â”€ Table â”€â”€ */
@@ -242,27 +246,26 @@ tbody td{padding:10px 14px;vertical-align:middle}
 </div>
 
 <!-- â•â•â• APP â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
-<div id="app">
-  <div class="app-hdr">
-    <div class="hdr-left">
-      <img class="app-logo" src="waislogo2.png" alt="WAIS">
-    </div>
+<div class="topbar">
+  <div class="topbar-left">
+    <img class="topbar-logo" src="waislogo2.png" alt="WAIS">
     <nav class="hdr-nav">
       <a class="nav-link active" href="index.html">Home</a>
-      <a class="nav-link" href="tracker.html">Project Tracker</a>
-      <a class="nav-link" href="map.html">Map View</a>
+      <a class="nav-link" href="tracker.html">Project Dashboard</a>
+      <a class="nav-link" href="map.html">Site Tracker</a>
       <a class="nav-link" href="download.html">Download</a>
     </nav>
-    <div class="hdr-right">
-      <div class="app-sub" id="welcome-msg">Welcome!</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn-sec" id="user-mgmt-btn" style="display:none" onclick="openUserMgmt()">&#128100; Manage Users</button>
-        <button class="btn-sec" onclick="refreshSites()">&#8635; Refresh</button>
-        <button class="btn-sec" onclick="doLogout()">Logout</button>
-      </div>
-      <div class="sync"><div class="dot" id="sync-dot"></div><span id="sync-lbl">Synced</span></div>
-    </div>
   </div>
+  <div class="topbar-right">
+    <div class="sync"><div class="dot" id="sync-dot"></div><span id="sync-lbl">Synced</span></div>
+    <span id="welcome-msg" style="font-size:12px;color:#888"></span>
+    <button class="btn-sec" id="user-mgmt-btn" style="display:none" onclick="openUserMgmt()">&#128100; Manage Users</button>
+    <button class="btn-sec" onclick="refreshSites()">&#8635; Refresh</button>
+    <button class="btn-sec" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<div id="app">
 
   <div class="readonly-bar" id="readonly-bar">&#128065; View-only mode </div>
 
