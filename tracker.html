@@ -137,6 +137,24 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2
 /* ── Loading skeleton ── */
 .skel{height:12px;border-radius:4px;background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;display:inline-block;width:100%}
 .skel-sm{width:50%}.skel-xs{width:30%}
+/* ── Mobile drawer ── */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #d0d0d0;border-radius:7px;background:#fff;cursor:pointer;flex-shrink:0;margin-left:auto;padding:0}
+.mob-drawer-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:900}
+.mob-drawer-bg.open{display:block}
+.mob-drawer{position:fixed;top:0;left:-280px;width:260px;height:100%;background:#fff;z-index:901;box-shadow:4px 0 20px rgba(0,0,0,.12);transition:left .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;visibility:hidden}
+.mob-drawer.open{left:0;visibility:visible}
+.mob-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #f0f0f0}
+.mob-drawer-logo{max-height:32px;width:auto}
+.mob-drawer-close{border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1;padding:4px}
+.mob-drawer-nav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;flex:1}
+.mob-drawer-nav a{display:block;padding:11px 14px;font-size:14px;font-weight:600;color:#555;text-decoration:none;border-radius:8px;transition:background .15s;position:relative}
+.mob-drawer-nav a:hover,.mob-drawer-nav a.active{background:#f0f0f0;color:#1a1a2e}
+.mob-drawer-nav a.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;background:#23ada7;border-radius:2px}
+.mob-drawer-footer{padding:14px;border-top:1px solid #f0f0f0;display:flex;flex-direction:column;gap:8px}
+.mob-drawer-btn{height:36px;width:100%;border:1px solid #d0d0d0;border-radius:8px;background:#fff;color:#555;font-size:13px;font-weight:500;cursor:pointer}
+.mob-drawer-btn:hover{background:#f5f5f5}
+.mob-drawer-btn.danger{border-color:#f5c2c2;color:#A32D2D}
+
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* ── Toast ── */
@@ -149,9 +167,55 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2
   .area-grid{grid-template-columns:repeat(3,1fr)}
   .row2{grid-template-columns:1fr}
 }
-@media(max-width:600px){
-  .kpi-grid{grid-template-columns:1fr 1fr}
+
+@media(max-width:768px){
+  /* Topbar */
+  .topbar{padding:0 14px}
+  .hdr-nav{display:none}
+  .topbar-right .topbar-btn{display:none}
+  .topbar-right .sync-pill{display:none}
+  .topbar-right #welcome-msg{display:none}
+  .mob-menu-btn{display:flex!important}
+
+  /* Page */
+  .page{padding:1rem}
+
+  /* KPIs — 2 col */
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi{padding:12px}
+  .kpi-val{font-size:22px}
+
+  /* Project table — scrollable */
+  .proj-table-wrap{max-height:280px}
+  .proj-table{font-size:11px}
+  .proj-table thead th{padding:6px 8px;font-size:10px}
+  .proj-table tbody td{padding:6px 8px}
+
+  /* Project filters — wrap nicely */
+  #proj-area-filters{gap:4px}
+  #proj-vendor-filters{gap:4px}
+  .fb{font-size:11px;padding:4px 10px}
+
+  /* Area grid — 2 col */
+  .area-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+
+  /* Site list table — scrollable */
+  .site-table-wrap{max-height:260px}
+  .site-table{font-size:11px;min-width:500px}
+  .site-table thead th{padding:7px 8px;font-size:10px}
+  .site-table tbody td{padding:7px 8px}
+
+  /* Search in site list */
+  #site-search{font-size:14px}
+
+  /* Section label */
+  .section-label{margin-bottom:6px}
+}
+
+@media(max-width:480px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .area-grid{grid-template-columns:1fr 1fr}
+  .page{padding:.75rem}
 }
 </style>
 </head>
@@ -173,6 +237,30 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2
     <span id="welcome-msg" style="font-size:12px;color:#888"></span>
     <button onclick="refreshData()" class="topbar-btn">&#8635; Refresh</button>
     <button onclick="doLogout()" class="topbar-btn">Logout</button>
+    <button class="mob-menu-btn" onclick="openDrawer()" aria-label="Menu">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect y="0" width="16" height="1.5" rx="1" fill="#555"/><rect y="5.25" width="16" height="1.5" rx="1" fill="#555"/><rect y="10.5" width="16" height="1.5" rx="1" fill="#555"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Mobile drawer -->
+<div class="mob-drawer-bg" id="mob-drawer-bg" onclick="closeDrawer()"></div>
+<div class="mob-drawer" id="mob-drawer">
+  <div class="mob-drawer-head">
+    <img class="mob-drawer-logo" src="waislogo2.png" alt="WAIS">
+    <button class="mob-drawer-close" onclick="closeDrawer()">&#215;</button>
+  </div>
+  <nav class="mob-drawer-nav">
+    <a href="index.html">Home</a>
+    <a class="active" href="tracker.html">Project Dashboard</a>
+    <a href="map.html">Site Tracker</a>
+    <a href="download.html">Download</a>
+  </nav>
+  <div class="mob-drawer-footer">
+    <div class="sync-pill"><div class="dot" id="mob-sync-dot"></div><span id="mob-sync-lbl">Loading…</span></div>
+    <span id="mob-welcome" style="font-size:12px;color:#888"></span>
+    <button class="mob-drawer-btn" onclick="closeDrawer();refreshData()">&#8635; Refresh</button>
+    <button class="mob-drawer-btn danger" onclick="closeDrawer();doLogout()">Logout</button>
   </div>
 </div>
 
@@ -292,6 +380,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2
     return;
   }
   document.getElementById('welcome-msg').textContent = 'Welcome, ' + (sess.display_name || sess.username) + '!';
+  var mob = document.getElementById('mob-welcome');
+  if (mob) mob.textContent = 'Welcome, ' + (sess.display_name || sess.username) + '!';
 })();
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -316,8 +406,14 @@ function fmtN(n){ return Number(n).toLocaleString(); }
 function pct(n, total){ return total ? Math.round(n/total*100) : 0; }
 
 function syncDot(state){
-  document.getElementById('sync-dot').className = 'dot'+(state==='spin'?' spin':state==='err'?' err':'');
-  document.getElementById('sync-lbl').textContent = state==='spin'?'Loading…':state==='err'?'Error':'Synced';
+  var cls='dot'+(state==='spin'?' spin':state==='err'?' err':'');
+  var txt=state==='spin'?'Loading…':state==='err'?'Error':'Synced';
+  document.getElementById('sync-dot').className=cls;
+  document.getElementById('sync-lbl').textContent=txt;
+  var md=document.getElementById('mob-sync-dot');
+  var ml=document.getElementById('mob-sync-lbl');
+  if(md) md.className=cls;
+  if(ml) ml.textContent=txt;
 }
 
 var _toastTimer;
@@ -774,6 +870,19 @@ function renderAll(){
   renderAreas(active);
   renderSites(active);
 }
+
+// ─── Mobile drawer ───────────────────────────────────────────────────────────
+function openDrawer(){
+  document.getElementById('mob-drawer').classList.add('open');
+  document.getElementById('mob-drawer-bg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('mob-drawer-bg').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
 function doLogout(){
