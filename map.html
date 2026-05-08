@@ -60,7 +60,57 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0
 .nearest-label .leaflet-popup-content{margin:8px 12px}
 .nearest-label .leaflet-popup-tip-container{display:none}
 
-/* ── Nearest site info bar ── */
+/* ── Mobile drawer ── */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid #d0d0d0;border-radius:7px;background:#fff;cursor:pointer;flex-shrink:0;margin-left:auto;padding:0}
+.mob-drawer-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:2500}
+.mob-drawer-bg.open{display:block}
+.mob-drawer{position:fixed;top:0;left:-280px;width:260px;height:100%;background:#fff;z-index:2501;box-shadow:4px 0 20px rgba(0,0,0,.12);transition:left .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;visibility:hidden}
+.mob-drawer.open{left:0;visibility:visible}
+.mob-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #f0f0f0}
+.mob-drawer-logo{max-height:32px;width:auto}
+.mob-drawer-close{border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1;padding:4px}
+.mob-drawer-nav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;flex:1}
+.mob-drawer-nav a{display:block;padding:11px 14px;font-size:14px;font-weight:600;color:#555;text-decoration:none;border-radius:8px;transition:background .15s;position:relative}
+.mob-drawer-nav a:hover,.mob-drawer-nav a.active{background:#f0f0f0;color:#1a1a2e}
+.mob-drawer-nav a.active::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;background:#23ada7;border-radius:2px}
+.mob-drawer-footer{padding:14px;border-top:1px solid #f0f0f0;display:flex;flex-direction:column;gap:8px}
+.mob-drawer-btn{height:36px;width:100%;border:1px solid #d0d0d0;border-radius:8px;background:#fff;color:#555;font-size:13px;font-weight:500;cursor:pointer}
+.mob-drawer-btn.danger{border-color:#f5c2c2;color:#A32D2D}
+
+/* ── Mobile map toolbar FAB ── */
+#mob-map-fab{display:none;position:absolute;bottom:72px;right:14px;z-index:1100;width:44px;height:44px;border-radius:50%;background:#1a1a2e;border:none;box-shadow:0 3px 12px rgba(0,0,0,.25);cursor:pointer;align-items:center;justify-content:center;color:#fff;font-size:20px}
+#mob-map-panel-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:1199}
+#mob-map-panel{display:none;position:fixed;bottom:0;left:0;right:0;z-index:1200;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 24px rgba(0,0,0,.15);padding:16px 16px 32px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#mob-map-panel.open{transform:translateY(0)}
+.mob-panel-handle{width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px}
+.mob-panel-section{display:flex;flex-direction:column;gap:10px}
+.mob-panel-label{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.mob-panel-row{display:flex;gap:8px;flex-wrap:wrap}
+.mob-panel-sep{border:none;border-top:1px solid #f0f0f0;margin:12px 0}
+
+@media(max-width:768px){
+  /* Topbar */
+  .topbar{padding:0 14px}
+  .hdr-nav{display:none}
+  .topbar-right .topbar-btn{display:none}
+  .topbar-right .sync-pill{display:none}
+  .topbar-right #welcome-msg{display:none}
+  .mob-menu-btn{display:flex!important}
+
+  /* Map height accounts for topbar only — strip is hidden */
+  #map-wrap{height:calc(100vh - 56px)}
+  .map-strip{display:none}
+
+  /* Show FAB and panel */
+  #mob-map-fab{display:flex}
+  #mob-map-panel{display:block}
+  #mob-map-panel-bg{display:block}
+  /* Site count badge - move up on mobile */
+  #site-count{bottom:72px;left:10px;font-size:10px}
+
+  /* Nearest bar - full width on mobile */
+  #nearest-bar{bottom:72px;width:calc(100% - 28px)}
+}
 #nearest-bar{
   position:fixed;
   bottom:20px;
@@ -112,8 +162,34 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0
     <div class="sync-pill"><div class="dot" id="sync-dot"></div><span id="sync-lbl">Loading…</span></div>
     <span id="welcome-msg" style="font-size:12px;color:#888"></span>
     <button onclick="if(_watchId!==null)navigator.geolocation.clearWatch(_watchId);doLogout();" class="topbar-btn">Logout</button>
+    <button class="mob-menu-btn" onclick="openDrawer()" aria-label="Menu">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect y="0" width="16" height="1.5" rx="1" fill="#555"/><rect y="5.25" width="16" height="1.5" rx="1" fill="#555"/><rect y="10.5" width="16" height="1.5" rx="1" fill="#555"/></svg>
+    </button>
   </div>
 </div>
+
+<!-- Mobile drawer -->
+<div class="mob-drawer-bg" id="mob-drawer-bg" onclick="closeDrawer()"></div>
+<div class="mob-drawer" id="mob-drawer">
+  <div class="mob-drawer-head">
+    <img class="mob-drawer-logo" src="waislogo2.png" alt="WAIS">
+    <button class="mob-drawer-close" onclick="closeDrawer()">&#215;</button>
+  </div>
+  <nav class="mob-drawer-nav">
+    <a href="index.html">Home</a>
+    <a href="tracker.html">Project Dashboard</a>
+    <a class="active" href="map.html">Site Tracker</a>
+    <a href="download.html">Download</a>
+  </nav>
+  <div class="mob-drawer-footer">
+    <div class="sync-pill"><div class="dot" id="mob-sync-dot"></div><span id="mob-sync-lbl">Loading…</span></div>
+    <span id="mob-welcome" style="font-size:12px;color:#888"></span>
+    <button class="mob-drawer-btn danger" onclick="closeDrawer();if(_watchId!==null)navigator.geolocation.clearWatch(_watchId);doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- Mobile map panel background -->
+<div id="mob-map-panel-bg" onclick="closeMobPanel()" style="display:none"></div>
 
 <div id="map-wrap">
   <div class="map-strip">
@@ -154,6 +230,55 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0
         <div class="nb-meta" id="nb-meta">—</div>
       </div>
     </div>
+
+    <!-- Mobile FAB -->
+    <button id="mob-map-fab" onclick="openMobPanel()" aria-label="Map controls">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
+    <!-- Mobile slide-up panel -->
+    <div id="mob-map-panel">
+      <div class="mob-panel-handle"></div>
+
+      <div class="mob-panel-section">
+        <div class="mob-panel-label">Search</div>
+        <div class="search-box" style="width:100%">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#aaa" stroke-width="1.3"/><path d="M11 11l3 3" stroke="#aaa" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input id="mob-map-search" placeholder="Search Site ID or Name…" oninput="onSearch(this.value);document.getElementById('map-search').value=this.value"/>
+        </div>
+      </div>
+
+      <hr class="mob-panel-sep">
+
+      <div class="mob-panel-section">
+        <div class="mob-panel-label">Technology</div>
+        <div class="mob-panel-row" id="mob-tech-filters">
+          <button class="fb on" onclick="setTechFilter(this,'all');syncMobFilters()">All</button>
+          <button class="fb" onclick="setTechFilter(this,'2G');syncMobFilters()">2G</button>
+          <button class="fb" onclick="setTechFilter(this,'4G');syncMobFilters()">4G</button>
+          <button class="fb" onclick="setTechFilter(this,'5G');syncMobFilters()">5G</button>
+        </div>
+      </div>
+
+      <hr class="mob-panel-sep">
+
+      <div class="mob-panel-section">
+        <div class="mob-panel-label">Map Style</div>
+        <div class="mob-panel-row">
+          <button class="tbtn active" id="mob-btn-map" onclick="setTile('map');document.getElementById('btn-map').click()" style="flex:1">Map</button>
+          <button class="tbtn" id="mob-btn-satellite" onclick="setTile('satellite');document.getElementById('btn-satellite').click()" style="flex:1">Satellite</button>
+        </div>
+      </div>
+
+      <hr class="mob-panel-sep">
+
+      <div class="mob-panel-section">
+        <div class="mob-panel-row">
+          <button class="tbtn gps-btn" id="mob-gps-btn" onclick="locateMe()" style="flex:1">&#127757; My Location</button>
+          <button class="tbtn" id="mob-nearest-btn" onclick="toggleNearest()" style="flex:1">&#128279; Nearest Site</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -170,6 +295,8 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#f0
     return;
   }
   document.getElementById('welcome-msg').textContent = 'Welcome, ' + (sess.display_name || sess.username) + '!';
+  var mob = document.getElementById('mob-welcome');
+  if (mob) mob.textContent = 'Welcome, ' + (sess.display_name || sess.username) + '!';
 })();
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -186,8 +313,14 @@ function isTrue(v){ return v===true||v===1||normStr(v)==='true'||normStr(v)==='1
 function isTech(s,t){ return isTrue(s['tech_'+t.toLowerCase()]); }
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function syncDot(state){
-  document.getElementById('sync-dot').className='dot'+(state==='spin'?' spin':state==='err'?' err':'');
-  document.getElementById('sync-lbl').textContent=state==='spin'?'Loading…':state==='err'?'Error':'Synced';
+  var cls='dot'+(state==='spin'?' spin':state==='err'?' err':'');
+  var txt=state==='spin'?'Loading…':state==='err'?'Error':'Synced';
+  document.getElementById('sync-dot').className=cls;
+  document.getElementById('sync-lbl').textContent=txt;
+  var md=document.getElementById('mob-sync-dot');
+  var ml=document.getElementById('mob-sync-lbl');
+  if(md) md.className=cls;
+  if(ml) ml.textContent=txt;
 }
 var _toastTimer;
 function showToast(msg,isErr){
@@ -633,6 +766,32 @@ function clearNearest(){
 window.addEventListener('beforeunload', function(){
   if(_watchId!==null) navigator.geolocation.clearWatch(_watchId);
 });
+
+// ─── Mobile drawer ───────────────────────────────────────────────────────────
+function openDrawer(){
+  document.getElementById('mob-drawer').classList.add('open');
+  document.getElementById('mob-drawer-bg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('mob-drawer-bg').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeDrawer();closeMobPanel();}});
+
+// ─── Mobile map panel ─────────────────────────────────────────────────────────
+function openMobPanel(){
+  document.getElementById('mob-map-panel').classList.add('open');
+  document.getElementById('mob-map-panel-bg').style.display='block';
+}
+function closeMobPanel(){
+  document.getElementById('mob-map-panel').classList.remove('open');
+  document.getElementById('mob-map-panel-bg').style.display='none';
+}
+function syncMobFilters(){
+  // Keep mobile panel filter pills in sync with desktop
+}
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
 function doLogout(){
