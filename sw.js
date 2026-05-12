@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wais-v1';
+const CACHE_NAME = 'wais-v2';
 
 // App shell — core files that make the app work offline
 const SHELL = [
@@ -6,6 +6,7 @@ const SHELL = [
   '/tracker.html',
   '/map.html',
   '/logs.html',
+  '/approvals.html',
   '/download.html',
   '/manifest.json',
   '/waislogo2.png',
