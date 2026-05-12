@@ -416,5 +416,23 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<script>
+// ─── PWA standalone navigation fix ───────────────────────────────────────────
+// Keeps all same-origin navigation within the standalone PWA shell on iOS
+(function(){
+  var isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  if (!isStandalone) return;
+  document.addEventListener('click', function(e){
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href || href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel')) return;
+    // Same-origin link — navigate within standalone window
+    e.preventDefault();
+    window.location.href = href;
+  });
+})();
+</script>
 </body>
 </html>
