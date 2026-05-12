@@ -1295,24 +1295,37 @@ function showDetail(idx) {
   var mapHtml = '';
   if (!isNaN(lat) && !isNaN(lon)) {
     var mapId = 'map-' + Date.now();
-    mapHtml = '<div class="det-f full" style="margin-top:4px">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
-        '<div class="det-k">&#128205; Map View</div>' +
-        '<div style="display:flex;gap:4px;align-items:center">' +
-          '<button id="tile-map-' + mapId + '" onclick="setTileLayer(\'' + mapId + '\',\'map\')" style="font-size:11px;padding:3px 9px;border:1px solid #1a1a2e;border-radius:5px;background:#1a1a2e;color:#fff;cursor:pointer;line-height:1.4">Map</button>' +
-          '<button id="tile-sat-' + mapId + '" onclick="setTileLayer(\'' + mapId + '\',\'satellite\')" style="font-size:11px;padding:3px 9px;border:1px solid #d0d0d0;border-radius:5px;background:#f9f9f9;color:#555;cursor:pointer;line-height:1.4">Satellite</button>' +
-          '<button id="map-exp-btn-' + mapId + '" onclick="toggleMapExpand(\'' + mapId + '\')" style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:5px;background:#f9f9f9;color:#555;cursor:pointer;line-height:1.4">&#8599; Expand</button>' +
+    var isMob = window.innerWidth <= 768;
+    var mapH = isMob ? 220 : 340;
+    mapHtml =
+      '<div class="det-f full" style="margin-top:8px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">' +
+          '<div class="det-k">&#128205; Map View</div>' +
+          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+            '<div style="display:flex;border:1px solid #e0e0e0;border-radius:7px;overflow:hidden;flex-shrink:0">' +
+              '<button id="tile-map-' + mapId + '" onclick="setTileLayer(\'' + mapId + '\',\'map\')"    style="font-size:12px;padding:5px 13px;border:none;background:#1a1a2e;color:#fff;cursor:pointer;font-family:inherit">Map</button>' +
+              '<button id="tile-sat-' + mapId + '" onclick="setTileLayer(\'' + mapId + '\',\'satellite\')" style="font-size:12px;padding:5px 13px;border:none;border-left:1px solid #e0e0e0;background:#fff;color:#555;cursor:pointer;font-family:inherit">Satellite</button>' +
+            '</div>' +
+            '<button id="map-exp-btn-' + mapId + '" onclick="toggleMapExpand(\'' + mapId + '\')" style="font-size:12px;padding:5px 12px;border:1px solid #e0e0e0;border-radius:7px;background:#fff;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:inherit;flex-shrink:0">&#8599; Expand</button>' +
+          '</div>' +
         '</div>' +
-      '</div>' +
-      '<div id="' + mapId + '" style="width:100%;height:260px;border-radius:8px;border:1px solid #e0e0e0;z-index:1;transition:height .3s ease"></div>' +
-      '<div style="font-size:11px;color:#aaa;margin-top:5px">Coordinates: ' + lat + ', ' + lon + '</div>' +
+        '<div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;box-shadow:0 2px 8px rgba(0,0,0,.07)">' +
+          '<div id="' + mapId + '" style="width:100%;height:' + mapH + 'px;transition:height .3s ease"></div>' +
+          '<div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.88);backdrop-filter:blur(4px);border:1px solid #e0e0e0;border-radius:6px;padding:3px 10px;font-size:10px;color:#888;pointer-events:none;white-space:nowrap;z-index:500">' + lat.toFixed(6) + ', ' + lon.toFixed(6) + '</div>' +
+        '</div>' +
       '</div>';
 
     setTimeout(function() {
       if (typeof L === 'undefined') return;
       var mapEl = document.getElementById(mapId);
       if (!mapEl || mapEl._leaflet_id) return;
-      var m = L.map(mapId, { zoomControl: true, scrollWheelZoom: true }).setView([lat, lon], 14);
+      var m = L.map(mapId, {
+        zoomControl: true,
+        scrollWheelZoom: true,
+        preferCanvas: true,
+        tap: true,
+        tapTolerance: 15
+      }).setView([lat, lon], 15);
       _detailMap = m;
       _tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -1323,51 +1336,49 @@ function showDetail(idx) {
       var _kmzCtrl = L.control({ position: 'topright' });
       _kmzCtrl.onAdd = function() {
         var div = L.DomUtil.create('div', '');
-        div.style.cssText = 'background:rgba(255,255,255,.93);border-radius:5px;box-shadow:0 1px 5px rgba(0,0,0,.18);padding:5px 7px;font-family:\'Segoe UI\',sans-serif';
+        div.style.cssText = 'background:rgba(255,255,255,.93);border-radius:6px;box-shadow:0 1px 5px rgba(0,0,0,.15);padding:5px 8px;font-family:\'Segoe UI\',sans-serif';
         L.DomEvent.disableClickPropagation(div);
         L.DomEvent.disableScrollPropagation(div);
         var opts = KMZ_LAYERS.length
           ? '<option value="">— select —</option>' + KMZ_LAYERS.map(function(l){ return '<option value="' + escHtml(l.file) + '">' + escHtml(l.name) + '</option>'; }).join('')
           : '<option value="" disabled>No layers</option>';
         div.innerHTML =
-          '<div style="display:flex;align-items:center;gap:3px">' +
+          '<div style="display:flex;align-items:center;gap:4px">' +
             '<span style="font-size:9px;color:#bbb;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0">KMZ</span>' +
-            '<select id="kmz-sel-' + mapId + '" style="width:110px;height:20px;font-size:10px;border:1px solid #ddd;border-radius:3px;padding:0 3px;background:#fff;color:#555;outline:none">' + opts + '</select>' +
-            '<button onclick="addKmzFromSelect(\'' + mapId + '\')" style="height:20px;width:22px;font-size:14px;line-height:1;border:1px solid #ddd;border-radius:3px;background:#fff;color:#777;cursor:pointer;flex-shrink:0;padding:0"' + (!KMZ_LAYERS.length ? ' disabled' : '') + '>+</button>' +
+            '<select id="kmz-sel-' + mapId + '" style="width:110px;height:22px;font-size:10px;border:1px solid #ddd;border-radius:4px;padding:0 4px;background:#fff;color:#555;outline:none">' + opts + '</select>' +
+            '<button onclick="addKmzFromSelect(\'' + mapId + '\')" style="height:22px;width:24px;font-size:14px;line-height:1;border:1px solid #ddd;border-radius:4px;background:#fff;color:#777;cursor:pointer;flex-shrink:0;padding:0"' + (!KMZ_LAYERS.length ? ' disabled' : '') + '>+</button>' +
           '</div>' +
-          '<div id="kmz-list-' + mapId + '" style="margin-top:2px;max-width:150px"></div>';
+          '<div id="kmz-list-' + mapId + '" style="margin-top:3px;max-width:150px"></div>';
         return div;
       };
       _kmzCtrl.addTo(m);
 
-      // Add all other sites as small plain dots
+      // Nearby sites as small dots
       ALL.forEach(function(other) {
         var olat = parseFloat(other.latitude), olon = parseFloat(other.longitude);
         if (isNaN(olat) || isNaN(olon)) return;
-        if (other.site_id === s.site_id) return; // skip selected, drawn separately below
+        if (other.site_id === s.site_id) return;
         var dotIcon = L.divIcon({
           className: '',
           html: '<div style="position:relative;width:0;height:0">' +
-                '<div style="position:absolute;bottom:8.5px;left:0;transform:translateX(-50%);background:rgba(80,80,80,0.65);color:#fff;font-size:8px;font-weight:600;font-family:\'Segoe UI\',sans-serif;padding:1px 4px;border-radius:3px;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.2);letter-spacing:.02em">' + escHtml(other.site_id) + '</div>' +
+                '<div style="position:absolute;bottom:8.5px;left:0;transform:translateX(-50%);background:rgba(80,80,80,0.65);color:#fff;font-size:8px;font-weight:600;font-family:\'Segoe UI\',sans-serif;padding:1px 4px;border-radius:3px;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.2)">' + escHtml(other.site_id) + '</div>' +
                 '<div style="position:absolute;bottom:3.5px;left:-0.75px;width:1.5px;height:5px;background:#999"></div>' +
                 '<div style="position:absolute;top:-3.5px;left:-3.5px;width:7px;height:7px;border-radius:50%;background:#aaa;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>' +
                 '</div>',
-          iconSize: [0, 0],
-          iconAnchor: [0, 0]
+          iconSize: [0, 0], iconAnchor: [0, 0]
         });
         L.marker([olat, olon], { icon: dotIcon, title: other.site_id }).addTo(m);
       });
 
-      // Add selected site with labeled pin on top
+      // Selected site pin
       var pinIcon = L.divIcon({
         className: '',
         html: '<div style="position:relative;width:0;height:0">' +
-              '<div style="position:absolute;bottom:13px;left:0;transform:translateX(-50%);background:#2E7D32;color:#fff;font-size:10px;font-weight:700;font-family:\'Segoe UI\',sans-serif;padding:3px 7px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.25);letter-spacing:.03em">' + escHtml(s.site_id) + '</div>' +
+              '<div style="position:absolute;bottom:13px;left:0;transform:translateX(-50%);background:#2E7D32;color:#fff;font-size:10px;font-weight:700;font-family:\'Segoe UI\',sans-serif;padding:3px 8px;border-radius:5px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2)">' + escHtml(s.site_id) + '</div>' +
               '<div style="position:absolute;bottom:5px;left:-1px;width:2px;height:8px;background:#2E7D32"></div>' +
-              '<div style="position:absolute;top:-5px;left:-5px;width:10px;height:10px;border-radius:50%;background:#2E7D32;box-shadow:0 0 0 3px rgba(46,125,50,.25)"></div>' +
+              '<div style="position:absolute;top:-5px;left:-5px;width:10px;height:10px;border-radius:50%;background:#2E7D32;box-shadow:0 0 0 4px rgba(46,125,50,.2)"></div>' +
               '</div>',
-        iconSize: [0, 0],
-        iconAnchor: [0, 0]
+        iconSize: [0, 0], iconAnchor: [0, 0]
       });
       L.marker([lat, lon], { icon: pinIcon, zIndexOffset: 1000 }).addTo(m);
     }, 100);
@@ -1402,8 +1413,11 @@ function toggleMapExpand(mapId) {
   var mapEl = document.getElementById(mapId);
   var btn = document.getElementById('map-exp-btn-' + mapId);
   if (!mapEl || !btn) return;
+  var isMob = window.innerWidth <= 768;
+  var normalH = isMob ? '220px' : '340px';
+  var expandH = isMob ? '400px' : '560px';
   var expanded = mapEl.getAttribute('data-expanded') === '1';
-  mapEl.style.height = expanded ? '260px' : '520px';
+  mapEl.style.height = expanded ? normalH : expandH;
   mapEl.setAttribute('data-expanded', expanded ? '0' : '1');
   btn.innerHTML = expanded ? '&#8599; Expand' : '&#8601; Collapse';
   if (_detailMap) setTimeout(function(){ _detailMap.invalidateSize(); }, 320);
